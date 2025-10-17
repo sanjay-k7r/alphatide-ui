@@ -4,6 +4,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useMemo,
   useImperativeHandle,
   useRef,
   useState,
@@ -287,12 +288,11 @@ export const ChatKitPanel = forwardRef<ChatKitPanelHandle, ChatKitPanelProps>(
     [isWorkflowConfigured, setErrorState]
   );
 
+  const themeConfig = useMemo(() => getThemeConfig(theme), [theme]);
+
   const chatkit = useChatKit({
     api: { getClientSecret },
-    theme: {
-      colorScheme: theme,
-      ...getThemeConfig(theme),
-    },
+    theme: themeConfig,
     startScreen: {
       greeting: GREETING,
       prompts: STARTER_PROMPTS,
@@ -360,6 +360,17 @@ export const ChatKitPanel = forwardRef<ChatKitPanelHandle, ChatKitPanelProps>(
     },
   });
 
+  useEffect(() => {
+    const element = chatkit.ref.current;
+    if (!element) {
+      return;
+    }
+    element.setOptions({
+      ...chatkit.control.options,
+      theme: themeConfig,
+    });
+  }, [chatkit, themeConfig]);
+
   useImperativeHandle(
     ref,
     () => ({
@@ -388,7 +399,7 @@ export const ChatKitPanel = forwardRef<ChatKitPanelHandle, ChatKitPanelProps>(
   }
 
   return (
-    <div className="relative pb-8 flex h-[90vh] w-full rounded-2xl flex-col overflow-hidden bg-white shadow-sm transition-colors dark:bg-slate-900">
+    <div className="relative flex h-[90vh] w-full flex-col overflow-hidden rounded-2xl bg-card pb-8 shadow-sm transition-colors">
       <ChatKit
         key={widgetInstanceKey}
         control={chatkit.control}

@@ -1,4 +1,8 @@
-import { ColorScheme, StartScreenPrompt, ThemeOption } from "@openai/chatkit";
+import {
+  ColorScheme,
+  StartScreenPrompt,
+  ThemeOption,
+} from "@openai/chatkit";
 
 export const WORKFLOW_ID =
   process.env.NEXT_PUBLIC_CHATKIT_WORKFLOW_ID?.trim() ?? "";
@@ -25,35 +29,67 @@ export const GREETING = "How can I help you today?";
 export const DISCLAIMER_TEXT =
   "Not financial advice. AI can make mistakes. Always verify data.";
 
-export const getThemeConfig = (theme: ColorScheme): ThemeOption => ({
-  density: "compact",
+const TYPOGRAPHY: ThemeOption["typography"] = {
+  baseSize: 16,
+  fontFamily:
+    '"OpenAI Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
+  fontFamilyMono:
+    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace',
+  fontSources: [
+    {
+      family: "OpenAI Sans",
+      src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Regular.woff2",
+      weight: 400,
+      style: "normal",
+      display: "swap",
+    },
+    // add the rest of your font sources here
+  ],
+};
+
+const LIGHT_THEME: ThemeOption = {
+  colorScheme: "light",
   radius: "round",
-  typography: {
-    baseSize: 16,
-    fontFamily:
-      '"OpenAI Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
-    fontFamilyMono:
-      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace',
-    fontSources: [
-      {
-        family: "OpenAI Sans",
-        src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Regular.woff2",
-        weight: 400,
-        style: "normal",
-        display: "swap",
-      },
-      // add the rest of your font sources here
-    ],
-  },
+  density: "compact",
+  typography: TYPOGRAPHY,
   color: {
+    surface: {
+      background: "#ffffff",
+      foreground: "#111111",
+    },
     grayscale: {
-      hue: 220,
-      tint: 6,
-      shade: theme === "dark" ? -1 : -4,
+      hue: 0,
+      tint: 0,
+      shade: -2,
     },
     accent: {
-      primary: theme === "dark" ? "#f1f5f9" : "#0f172a",
+      primary: "#111111",
       level: 1,
     },
   },
-});
+};
+
+const DARK_THEME: ThemeOption = {
+  colorScheme: "dark",
+  radius: "round",
+  density: "compact",
+  typography: TYPOGRAPHY,
+  color: {
+    surface: {
+      background: "#111111",
+      foreground: "#f5f5f5",
+    },
+    grayscale: {
+      hue: 0,
+      tint: 0,
+      shade: 2,
+    },
+    accent: {
+      primary: "#f5f5f5",
+      level: 1,
+    },
+  },
+};
+
+export const getThemeConfig = (theme: ColorScheme): ThemeOption =>
+  theme === "dark" ? DARK_THEME : LIGHT_THEME;

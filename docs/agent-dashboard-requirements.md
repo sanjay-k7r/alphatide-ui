@@ -22,7 +22,8 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ### 1.3 MVP Scope
 
-- Single-page dashboard with market overview + ticker analysis sliders
+- Navbar with two tabs: **Chat** (existing functionality) and **Radar** (agent dashboard)
+- Radar: Single-page dashboard with market overview + ticker analysis sliders
 - 4 autonomous analysis agents per ticker (Momentum, Flow, Volatility, Greeks)
 - Automated confidence scoring and trading insights
 - Alert system for meaningful changes
@@ -37,33 +38,65 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 **As an options trader, I want to:**
 
-1. See overall market conditions at a glance so I understand the trading environment before analyzing individual tickers
+1. Switch between Chat and Radar tabs so I can either ask detailed questions (Chat) or monitor my watchlist (Radar)
 
-2. Add tickers to my watchlist so I can monitor multiple opportunities simultaneously
+2. See overall market conditions at a glance in the Radar tab so I understand the trading environment before analyzing individual tickers
 
-3. See a traffic light summary for each ticker so I can quickly assess which setups are worth investigating
+3. Add tickers to my watchlist so I can monitor multiple opportunities simultaneously
 
-4. Get a confidence score for each ticker so I know how strong the setup is before trading
+4. See a traffic light summary for each ticker so I can quickly assess which setups are worth investigating
 
-5. Expand any ticker to see detailed reasoning from each analysis agent so I understand the "why" behind the signals
+5. Get a confidence score for each ticker so I know how strong the setup is before trading
 
-6. Receive real-time alerts when significant changes occur so I don't miss important developments
+6. Expand any ticker to see detailed reasoning from each analysis agent so I understand the "why" behind the signals
 
-7. Get clear trading guidance ("what should I do") so I can make faster decisions
+7. Toggle agents on/off and configure their update intervals so I can customize monitoring based on my trading style
 
-8. Reorder my watchlist so my most important tickers are at the top
+8. Receive real-time alerts when significant changes occur so I don't miss important developments
 
-9. Have the system continuously update during market hours so I don't have to manually refresh
+9. Get clear trading guidance ("what should I do") so I can make faster decisions
 
-10. Access this dashboard on both desktop and mobile so I can trade from anywhere
+10. Reorder my watchlist so my most important tickers are at the top
+
+11. Have the system continuously update during market hours so I don't have to manually refresh
+
+12. Access this dashboard on both desktop and mobile so I can trade from anywhere
+
+13. Return to the last tab I was using (Chat or Radar) when I reopen the app so my workflow is not interrupted
 
 ---
 
 ## 3. Functional Requirements
 
-### 3.1 Market Control Tower (Top Section)
+### 3.1 Navigation (Navbar Tabs)
 
-**FR-1.1: Display Market Overview**
+**FR-1.1: Tab Navigation**
+
+- MUST show navbar at top of application with two tabs: "Chat" and "Radar"
+- "Chat" tab MUST display existing chat interface with LangGraph agent
+- "Radar" tab MUST display the agent dashboard (market overview + ticker sliders)
+- MUST highlight active tab with visual indicator
+- MUST preserve user state when switching between tabs
+- MUST use client-side routing (no page reload)
+
+**FR-1.2: Default Behavior**
+
+- SHOULD default to "Chat" tab for returning users (last used tab)
+- SHOULD default to "Chat" tab for new users
+- MUST remember active tab across browser sessions
+
+**FR-1.3: Visual Requirements**
+
+- Tabs MUST be clearly labeled and easy to identify
+- MUST work on both desktop and mobile layouts
+- Active tab MUST be visually distinct from inactive tab
+- Tabs MUST be keyboard accessible (tab key + enter)
+
+---
+
+### 3.2 Market Control Tower (Radar Tab - Top Section)
+
+**FR-2.1: Display Market Overview**
 
 - MUST show: SPY price, % change, trend direction
 - MUST show: QQQ price, % change, trend direction
@@ -72,22 +105,23 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST show: Total active alerts across all tickers
 - MUST show: Last update timestamp
 
-**FR-1.2: Visual Indicators**
+**FR-2.2: Visual Indicators**
 
 - MUST use color coding: Green (bullish), Yellow (neutral), Red (bearish)
-- MUST be fixed/sticky at top of page
+- MUST be fixed/sticky at top of Radar page (below navbar)
 - MUST be single line, compact view (~60-80px height)
 
-**FR-1.3: Update Frequency**
+**FR-2.3: Update Frequency**
 
 - MUST update every 60 seconds during market hours (9:30 AM - 4:00 PM ET)
 - MUST update every 5 minutes outside market hours
+- MUST only update when Radar tab is active
 
 ---
 
-### 3.2 Ticker Slider - Collapsed View
+### 3.3 Ticker Slider - Collapsed View (Radar Tab)
 
-**FR-2.1: Display Summary Information**
+**FR-3.1: Display Summary Information**
 
 - MUST show ticker symbol with ability to remove/delete
 - MUST show confidence score (0-100 scale) with color gradient (Red: 0-40, Yellow: 41-60, Green: 61-100)
@@ -98,7 +132,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST show expand/collapse control
 - MUST show settings icon/button to access agent configuration
 
-**FR-2.2: Interaction Requirements**
+**FR-3.2: Interaction Requirements**
 
 - MUST expand to detailed view when clicked anywhere on slider
 - MUST collapse when clicked again
@@ -106,7 +140,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST show hover state for better UX
 - MUST persist order after page refresh
 
-**FR-2.3: Visual Requirements**
+**FR-3.3: Visual Requirements**
 
 - MUST be horizontally oriented bar (~50px height)
 - MUST have clear visual separation between sliders
@@ -114,9 +148,9 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ---
 
-### 3.3 Ticker Slider - Expanded View
+### 3.4 Ticker Slider - Expanded View (Radar Tab)
 
-**FR-3.1: Trading Insight Section**
+**FR-4.1: Trading Insight Section**
 
 - MUST display at top of expanded view
 - MUST synthesize all agent analyses into 2-4 sentences
@@ -124,7 +158,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST suggest trading strategy or action
 - MUST be visually distinct (highlighted background)
 
-**FR-3.2: Agent Analysis Sections**
+**FR-4.2: Agent Analysis Sections**
 
 - MUST display 4 agent sections: Momentum, Flow, Volatility, Greeks
 - Each section MUST have:
@@ -142,14 +176,14 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - Disabled agents MUST show inactive/grayed state with option to enable
 - Disabled agents MUST NOT display data or contribute to confidence score
 
-**FR-3.3: Active Alerts Section**
+**FR-4.3: Active Alerts Section**
 
 - MUST display only if alerts exist
 - MUST show up to 5 most recent alerts
 - Each alert MUST include: timestamp, alert type icon, message
 - MUST sort newest first
 
-**FR-3.4: Expansion Behavior**
+**FR-4.4: Expansion Behavior**
 
 - MUST animate expand/collapse (smooth transition)
 - MUST only allow one expanded ticker at a time (optional: make configurable)
@@ -157,9 +191,9 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ---
 
-### 3.4 Add Ticker Functionality
+### 3.5 Add Ticker Functionality (Radar Tab)
 
-**FR-4.1: Add Ticker Interface**
+**FR-5.1: Add Ticker Interface**
 
 - MUST provide "Add Ticker" button in header of watchlist section
 - MUST show input field when clicked (modal or inline)
@@ -167,27 +201,27 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST show error message if invalid ticker
 - MUST prevent duplicate tickers
 
-**FR-4.2: Post-Add Behavior**
+**FR-5.2: Post-Add Behavior**
 
 - MUST add new ticker to bottom of watchlist
 - MUST immediately begin agent analysis
 - MUST show "Analyzing..." loading state until first results available
 - MUST persist watchlist to user's account
 
-**FR-4.3: Remove Ticker**
+**FR-5.3: Remove Ticker**
 
 - MUST provide delete/remove control on each ticker
 - MUST require confirmation before deletion
 - MUST remove from watchlist and stop agent updates
 
-**FR-4.4: Watchlist Limits**
+**FR-5.4: Watchlist Limits**
 
 - SHOULD limit to 20 tickers per user (MVP)
 - MUST inform user when limit reached
 
 ---
 
-### 3.5 Analysis Agents
+### 3.6 Analysis Agents
 
 **Architecture Overview**
 
@@ -196,7 +230,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - Each agent can be toggled on/off independently by the user
 - Default refresh interval: 15 minutes (user can adjust per agent)
 
-**FR-5.1: Momentum Agent**
+**FR-6.1: Momentum Agent**
 
 - MUST analyze: price trend, volume, relative strength vs indices
 - MUST determine status: Strong Up / Weak Up / Ranging / Weak Down / Strong Down
@@ -205,7 +239,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST identify: breakouts, volume spikes, trend changes
 - MUST return JSON with: status, confidence contribution, data points, three-question framework
 
-**FR-5.2: Flow Agent**
+**FR-6.2: Flow Agent**
 
 - MUST analyze: options premium flow, NOPE signal, unusual activity, dark pool trades
 - MUST determine status: Bullish / Slightly Bullish / Mixed / Slightly Bearish / Bearish
@@ -214,7 +248,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST identify: institutional positioning, large block trades
 - MUST return JSON with: status, confidence contribution, data points, three-question framework
 
-**FR-5.3: Volatility Agent**
+**FR-6.3: Volatility Agent**
 
 - MUST analyze: IV Rank, IV vs RV spread, term structure, upcoming catalysts
 - MUST determine status: Low / Normal / Elevated / High
@@ -223,7 +257,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST identify: IV spikes, IV crush, expensive/cheap options
 - MUST return JSON with: status, confidence contribution, data points, three-question framework
 
-**FR-5.4: Greeks Agent**
+**FR-6.4: Greeks Agent**
 
 - MUST analyze: gamma walls, max pain, net delta, OI concentration
 - MUST determine status: Favorable / Neutral / Risk
@@ -232,7 +266,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST identify: key support/resistance levels, pin risk zones
 - MUST return JSON with: status, confidence contribution, data points, three-question framework
 
-**FR-5.5: Agent Data Requirements**
+**FR-6.5: Agent Data Requirements**
 
 - Each agent MUST use existing Alphatide tools (documented in Tools.md)
 - Each agent MUST return structured JSON containing:
@@ -247,7 +281,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - Each agent MUST cache results server-side to minimize redundant computation
 - Each agent MUST handle errors gracefully and return last known good data with error flag
 
-**FR-5.6: Agent Control & Configuration**
+**FR-6.6: Agent Control & Configuration**
 
 - Frontend MUST allow users to toggle each agent on/off independently
 - Frontend MUST allow users to configure refresh interval per agent (options: 5, 10, 15, 30, 60 minutes)
@@ -256,16 +290,17 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ---
 
-### 3.6 Confidence Score System
+### 3.7 Confidence Score System
 
-**FR-6.1: Score Calculation**
+**FR-7.1: Score Calculation**
 
-- MUST aggregate scores from all 4 agents (total possible: 0-100)
+- MUST aggregate scores from all 4 enabled agents (total possible: 0-100)
 - Each agent contributes weighted points based on signal strength
 - MUST normalize to 0-100 integer scale
 - MUST update whenever any agent updates
+- Disabled agents MUST NOT contribute to confidence score
 
-**FR-6.2: Score Interpretation**
+**FR-7.2: Score Interpretation**
 
 - 80-100: Very High Confidence (strong alignment)
 - 60-79: High Confidence (most indicators aligned)
@@ -273,7 +308,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - 20-39: Low Confidence (conflicting signals)
 - 0-19: Very Low Confidence (poor setup)
 
-**FR-6.3: Visual Display**
+**FR-7.3: Visual Display**
 
 - MUST use color gradient (Red→Yellow→Green)
 - MUST show as badge with target icon: 🎯 72
@@ -281,31 +316,32 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ---
 
-### 3.7 Alert System
+### 3.8 Alert System
 
-**FR-7.1: Alert Generation**
+**FR-8.1: Alert Generation**
 
 - System MUST automatically generate alerts for:
   - Momentum: breakouts, volume spikes, trend changes
   - Flow: unusual activity, large premium flows, NOPE flips
   - Volatility: IV spikes, IV crush, catalyst warnings
   - Greeks: approaching gamma walls, max pain crossings
+- Disabled agents MUST NOT generate new alerts
 
-**FR-7.2: Alert Display**
+**FR-8.2: Alert Display**
 
 - MUST show alert count badge on collapsed slider
 - MUST list alerts in expanded view
 - Each alert MUST include: timestamp, type icon, clear message
 - MUST show maximum 5 alerts per ticker
 
-**FR-7.3: Alert Management**
+**FR-8.3: Alert Management**
 
 - MUST store alerts for 24 hours
 - MUST auto-delete old alerts when limit exceeded
 - SHOULD allow user to mark alerts as read (removes from count)
 - SHOULD allow user to dismiss individual alerts
 
-**FR-7.4: Alert Priorities**
+**FR-8.4: Alert Priorities**
 
 - System SHOULD prioritize high-severity alerts
 - SHOULD show most recent alerts first
@@ -313,18 +349,20 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ---
 
-### 3.8 Auto-Refresh & Update Logic
+### 3.9 Auto-Refresh & Update Logic
 
-**FR-8.1: Frontend-Driven Update Strategy**
+**FR-9.1: Frontend-Driven Update Strategy**
 
 - Frontend MUST trigger agent updates via API calls at user-configured intervals
 - Default interval: 15 minutes per agent (user can adjust to 5, 10, 15, 30, or 60 minutes)
 - Frontend MUST maintain separate timers for each agent per ticker
 - Frontend MUST skip updates for disabled agents
+- Frontend MUST pause timers when user switches to Chat tab
+- Frontend MUST resume timers when user switches back to Radar tab
 - SHOULD implement optional manual refresh button per ticker for immediate updates
 - SHOULD pause/resume timers based on browser tab visibility (pause when tab inactive)
 
-**FR-8.2: Update Indicators**
+**FR-9.2: Update Indicators**
 
 - MUST show "Updated: HH:MM AM/PM" timestamp on each agent section
 - MUST show "Updating..." indicator when API call is in progress
@@ -332,15 +370,15 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - SHOULD show loading spinner only on initial load, not on subsequent updates
 - MUST display agent's configured refresh interval in UI (e.g., "Updates every 15 min")
 
-**FR-8.3: Market Hours Awareness**
+**FR-9.3: Market Hours Awareness**
 
 - MUST detect market status: Pre-Market / Regular Hours / After Hours / Closed
-- Frontend SHOULD display current market status in header
+- Frontend SHOULD display current market status in Market Control Tower
 - SHOULD suggest longer intervals when market is closed
 - MAY show warning if user sets very frequent intervals (<5 min) to manage API usage
 - SHOULD allow users to override default behavior if desired
 
-**FR-8.4: Update Orchestration**
+**FR-9.4: Update Orchestration**
 
 - Frontend MUST stagger initial agent calls to avoid simultaneous API requests
 - MUST handle multiple tickers without blocking UI (use async/await patterns)
@@ -348,7 +386,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST show graceful loading states during updates
 - MUST NOT block user interaction during background updates
 
-**FR-8.5: Error Handling**
+**FR-9.5: Error Handling**
 
 - MUST cache last successful response per agent
 - MUST display cached data if API call fails
@@ -358,47 +396,49 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ---
 
-### 3.9 Responsive Design
+### 3.10 Responsive Design (Radar Tab)
 
-**FR-9.1: Desktop Layout (>1024px)**
+**FR-10.1: Desktop Layout (>1024px)**
 
 - MUST show full horizontal sliders
 - MUST display all indicators inline
 - MUST support drag-and-drop reordering
 - SHOULD show 4-6 sliders without scrolling
 
-**FR-9.2: Tablet Layout (768px - 1024px)**
+**FR-10.2: Tablet Layout (768px - 1024px)**
 
 - MUST maintain horizontal sliders
 - MAY stack some indicators if needed for space
 - MUST remain fully functional
 
-**FR-9.3: Mobile Layout (<768px)**
+**FR-10.3: Mobile Layout (<768px)**
 
 - MUST convert to vertical card layout
 - MUST show confidence score prominently
 - MUST allow swipe gestures for expand/collapse
 - MUST maintain all functionality
 - MAY show simplified collapsed view with fewer indicators
+- Navbar tabs MUST remain accessible and easy to switch
 
 ---
 
-### 3.10 Data Persistence
+### 3.11 Data Persistence
 
-**FR-10.1: User Watchlist**
+**FR-11.1: User Watchlist**
 
 - MUST save watchlist to user account/database
 - MUST persist ticker order
-- MUST load watchlist on page load
+- MUST load watchlist on page load (when Radar tab is accessed)
 - MUST sync across devices
 
-**FR-10.2: User Preferences**
+**FR-11.2: User Preferences**
 
 - SHOULD save expanded/collapsed state per ticker
-- SHOULD remember scroll position
+- SHOULD remember scroll position on Radar tab
 - SHOULD save alert read/unread status
+- MUST remember last active tab (Chat or Radar)
 
-**FR-10.3: Agent Configuration Persistence**
+**FR-11.3: Agent Configuration Persistence**
 
 - MUST save agent on/off state per ticker per user
 - MUST save refresh interval preferences per agent per ticker per user
@@ -406,12 +446,12 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST sync configuration across devices
 - Default configuration: all agents enabled, 15-minute interval
 
-**FR-10.4: Analysis Cache**
+**FR-11.4: Analysis Cache**
 
 - Frontend MUST cache agent analysis results in local storage
 - Backend MUST cache agent analysis results server-side
 - Backend SHOULD respect cache TTL per agent type (5 minutes recommended)
-- Frontend MUST serve cached data immediately on page load
+- Frontend MUST serve cached data immediately on Radar tab load
 - Frontend MUST refresh cache after successful API call
 
 ---
@@ -660,17 +700,24 @@ These MAY be considered for future versions based on MVP feedback.
 
 **The MVP is complete when:**
 
-✅ User can add/remove tickers to watchlist  
-✅ Dashboard shows market overview (SPY/QQQ/VIX)  
-✅ Each ticker shows confidence score and 4 status indicators  
-✅ User can expand ticker to see detailed agent analysis  
-✅ Each agent provides "what changed, does it matter, what to do" guidance  
-✅ Trading insight synthesizes all agents into actionable advice  
-✅ Alerts are generated and displayed for significant changes  
-✅ Dashboard auto-refreshes during market hours  
-✅ Works on desktop and mobile browsers  
-✅ Loads in <2 seconds, updates in <5 seconds  
+✅ Navbar with Chat and Radar tabs is functional
+✅ Chat tab preserves existing LangGraph agent functionality
+✅ Radar tab displays the agent dashboard
+✅ User can add/remove tickers to watchlist (Radar tab)
+✅ Dashboard shows market overview (SPY/QQQ/VIX) in Radar tab
+✅ Each ticker shows confidence score and 4 status indicators
+✅ User can toggle agents on/off per ticker
+✅ User can configure refresh intervals per agent (5, 10, 15, 30, 60 min)
+✅ User can expand ticker to see detailed agent analysis
+✅ Each agent provides "what changed, does it matter, what to do" guidance
+✅ Trading insight synthesizes all enabled agents into actionable advice
+✅ Alerts are generated and displayed for significant changes
+✅ Frontend triggers agent updates at user-configured intervals
+✅ Timers pause when switching to Chat tab
+✅ Works on desktop and mobile browsers
+✅ Loads in <2 seconds, agent updates complete in <5 seconds
 ✅ Handles errors gracefully (shows cached data)
+✅ Last active tab is remembered across sessions
 
 ---
 

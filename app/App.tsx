@@ -51,7 +51,7 @@ export default function App() {
   );
 
   return (
-    <main className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950">
+    <main className="flex min-h-screen flex-col bg-background">
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 lg:flex-row">
         <div className="flex flex-1 justify-center lg:justify-start">
           <div className="w-full lg:max-w-4xl">

@@ -41,10 +41,7 @@ import type {
   Question,
   QuestionsByCategory,
 } from "@/features/questions/types/questions.types";
-import {
-  CATEGORY_COLORS,
-  getCategoryPriority,
-} from "@/features/questions/types/questions.types";
+import { getCategoryPriority } from "@/features/questions/types/questions.types";
 import { isAdminUser } from "@/features/questions/utils/admin";
 import type { Ticker } from "@/features/tickers/types/tickers.types";
 
@@ -63,46 +60,17 @@ interface QuestionsPanelProps {
 
 type FilteredQuestions = QuestionsByCategory;
 
-function getCategoryColors(category: string) {
-  const categoryName = category.toLowerCase();
-  const colorName = CATEGORY_COLORS[categoryName] || "gray";
+const CATEGORY_ITEM_CLASSES =
+  "border border-transparent bg-transparent text-foreground hover:border-border hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-  const colorMap: Record<string, string> = {
-    pink: "text-pink-700 hover:text-pink-800 hover:bg-pink-50 dark:text-pink-300 dark:hover:text-pink-200 dark:hover:bg-pink-950/40",
-    emerald:
-      "text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:text-emerald-200 dark:hover:bg-emerald-950/40",
-    blue: "text-blue-700 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-300 dark:hover:text-blue-200 dark:hover:bg-blue-950/40",
-    purple:
-      "text-purple-700 hover:text-purple-800 hover:bg-purple-50 dark:text-purple-300 dark:hover:text-purple-200 dark:hover:bg-purple-950/40",
-    amber:
-      "text-amber-700 hover:text-amber-800 hover:bg-amber-50 dark:text-amber-300 dark:hover:text-amber-200 dark:hover:bg-amber-950/40",
-    orange:
-      "text-orange-700 hover:text-orange-800 hover:bg-orange-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-950/40",
-    gray: "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 dark:hover:bg-slate-800/80",
-  };
-
-  return colorMap[colorName] || colorMap.gray;
+function getCategoryColors(_category: string) {
+  return CATEGORY_ITEM_CLASSES;
 }
 
-function getSubcategoryColors(category: string) {
-  const categoryName = category.toLowerCase();
-  const colorName = CATEGORY_COLORS[categoryName] || "gray";
+const SUBCATEGORY_CLASSES = "border-border text-foreground/70";
 
-  const colorMap: Record<string, string> = {
-    pink: "text-pink-600/80 border-pink-500/50 dark:text-pink-300/80 dark:border-pink-500/40",
-    emerald:
-      "text-emerald-600/80 border-emerald-500/50 dark:text-emerald-300/80 dark:border-emerald-500/40",
-    blue: "text-blue-600/80 border-blue-500/50 dark:text-blue-300/80 dark:border-blue-500/40",
-    purple:
-      "text-purple-600/80 border-purple-500/50 dark:text-purple-300/80 dark:border-purple-500/40",
-    amber:
-      "text-amber-600/80 border-amber-500/50 dark:text-amber-300/80 dark:border-amber-500/40",
-    orange:
-      "text-orange-600/80 border-orange-500/50 dark:text-orange-300/80 dark:border-orange-500/40",
-    gray: "text-sidebar-foreground/60 border-sidebar-foreground/30",
-  };
-
-  return colorMap[colorName] || colorMap.gray;
+function getSubcategoryColors(_category: string) {
+  return SUBCATEGORY_CLASSES;
 }
 
 export function QuestionsPanel({
@@ -425,7 +393,7 @@ export function QuestionsPanel({
   const desktopPanel = (
     <div
       className={cn(
-        "flex h-[90vh] w-[360px] flex-col overflow-hidden rounded-2xl border border-sidebar-border bg-sidebar shadow-sm transition-colors dark:border-slate-800/60 dark:bg-slate-900/90",
+        "flex h-[90vh] w-[360px] flex-col overflow-hidden rounded-2xl border border-sidebar-border bg-sidebar shadow-sm transition-colors",
         className
       )}
     >
@@ -468,7 +436,7 @@ export function QuestionsPanel({
       : undefined;
 
   const sheetClassName = cn(
-    "flex h-[85vh] flex-col rounded-t-3xl border-t border-sidebar-border bg-sidebar p-0 shadow-lg transition-transform duration-300 dark:border-slate-800/60 dark:bg-slate-900",
+    "flex h-[85vh] flex-col rounded-t-3xl border-t border-sidebar-border bg-sidebar p-0 shadow-lg transition-transform duration-300",
     isDragging && "transition-none"
   );
 
