@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { ChatKit, useChatKit } from "@openai/chatkit-react";
 import {
   STARTER_PROMPTS,
@@ -34,6 +41,11 @@ type ErrorState = {
   retryable: boolean;
 };
 
+export type ChatKitPanelHandle = {
+  setComposerValue: (text: string) => Promise<void>;
+  focusComposer: () => Promise<void>;
+};
+
 const isBrowser = typeof window !== "undefined";
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -44,12 +56,11 @@ const createInitialErrors = (): ErrorState => ({
   retryable: false,
 });
 
-export function ChatKitPanel({
-  theme,
-  onWidgetAction,
-  onResponseEnd,
-  onThemeRequest,
-}: ChatKitPanelProps) {
+export const ChatKitPanel = forwardRef<ChatKitPanelHandle, ChatKitPanelProps>(
+  function ChatKitPanel(
+    { theme, onWidgetAction, onResponseEnd, onThemeRequest }: ChatKitPanelProps,
+    ref
+  ) {
   const processedFacts = useRef(new Set<string>());
   const [errors, setErrors] = useState<ErrorState>(() => createInitialErrors());
   const [isInitializingSession, setIsInitializingSession] = useState(true);
@@ -349,6 +360,20 @@ export function ChatKitPanel({
     },
   });
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      setComposerValue: async (text: string) => {
+        await chatkit.setComposerValue({ text });
+        await chatkit.focusComposer();
+      },
+      focusComposer: async () => {
+        await chatkit.focusComposer();
+      },
+    }),
+    [chatkit]
+  );
+
   const activeError = errors.session ?? errors.integration;
   const blockingError = errors.script ?? activeError;
 
@@ -385,7 +410,7 @@ export function ChatKitPanel({
       />
     </div>
   );
-}
+});
 
 function extractErrorDetail(
   payload: Record<string, unknown> | undefined,
