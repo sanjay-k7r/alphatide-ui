@@ -249,7 +249,7 @@ function formatSentence(text: string | undefined) {
 function buildAgentReasoning(agent: AgentInsight) {
   return [
     formatSentence(agent.summary),
-    formatSentence(`Desk reads: ${agent.signal} (confidence ${agent.confidence}%).`),
+    formatSentence(`Confidence runs at ${agent.confidence}% backing "${agent.signal}".`),
     formatSentence(`${agent.kpiLabel} sits at ${agent.kpiValue} (${agent.change}).`),
   ].filter(Boolean) as string[]
 }
@@ -354,64 +354,50 @@ export default function RadarPage() {
                       <div
                         key={agent.id}
                         className={cn(
-                          "flex min-h-[228px] flex-col rounded-xl bg-card/90 p-4 shadow-sm ring-1 ring-inset ring-border/40 transition-all",
+                          "flex min-h-[220px] flex-col rounded-xl bg-card/90 p-4 shadow-sm ring-1 ring-inset ring-border/40 transition-all",
                           theme.background
                         )}
                       >
-                        <div className="flex items-start justify-between">
-                          <p
-                            className={cn(
-                              "text-[10px] font-semibold uppercase tracking-[0.3em]",
-                              theme.accent
-                            )}
-                          >
-                            {agent.label}
-                          </p>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <p
+                              className={cn(
+                                "text-[10px] font-semibold uppercase tracking-[0.3em]",
+                                theme.accent
+                              )}
+                            >
+                              {agent.label}
+                            </p>
+                            <p className="mt-3 text-base font-semibold leading-snug text-foreground">
+                              {agent.signal}
+                            </p>
+                          </div>
                           <div className="text-right">
-                            <span className="text-[10px] font-semibold uppercase tracking-[0.26em] text-muted-foreground">
-                              Focus Metric
-                            </span>
-                            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                               {agent.kpiLabel}
                             </p>
-                            <p className="text-xl font-semibold leading-none text-foreground">
+                            <p className="mt-1 text-xl font-semibold leading-none text-foreground">
                               {agent.kpiValue}
                             </p>
                           </div>
                         </div>
-                        <div className="mt-4 flex items-end justify-between">
-                          <div>
-                            <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-                              Confidence
+                        <div className="mt-6 flex items-end justify-between gap-4">
+                          <div className="flex items-end gap-2 text-foreground">
+                            <span className="text-5xl font-semibold leading-none tracking-tight">
+                              {agent.confidence}
                             </span>
-                            <div className="mt-1 flex items-baseline gap-1 text-foreground">
-                              <span className="text-5xl font-semibold leading-none tracking-tight">
-                                {agent.confidence}
-                              </span>
-                              <span className="text-2xl font-semibold leading-none text-foreground/60">%</span>
-                            </div>
-                            <span className="mt-3 inline-block text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
-                              Δ {agent.change}
+                            <span className="pb-1 text-lg font-semibold uppercase tracking-[0.24em] text-foreground/70">
+                              %
                             </span>
                           </div>
-                        </div>
-                        <div className="mt-6">
-                          <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                            Signal
+                          <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                            Δ {agent.change}
                           </span>
-                          <p className="mt-2 text-base font-semibold leading-snug text-foreground">
-                            {agent.signal}
-                          </p>
                         </div>
-                        <div className="mt-4">
-                          <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                            Reasoning
-                          </span>
-                          <div className="mt-2 space-y-1.5 text-sm leading-relaxed text-muted-foreground">
-                            {reasoning.map((sentence, index) => (
-                              <p key={`${agent.id}-reasoning-${index}`}>{sentence}</p>
-                            ))}
-                          </div>
+                        <div className="mt-5 space-y-1.5 text-sm leading-relaxed text-muted-foreground">
+                          {reasoning.map((sentence, index) => (
+                            <p key={`${agent.id}-reasoning-${index}`}>{sentence}</p>
+                          ))}
                         </div>
                       </div>
                     )
