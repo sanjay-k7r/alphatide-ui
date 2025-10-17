@@ -22,13 +22,29 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ### 1.3 MVP Scope
 
-- Navbar with two tabs: **Chat** (existing functionality) and **Radar** (agent dashboard)
+- Navbar with two tabs: **Chat** (existing OpenAI agent functionality) and **Radar** (agent dashboard)
 - Radar: Single-page dashboard with market overview + ticker analysis sliders
 - 4 autonomous analysis agents per ticker (Momentum, Flow, Volatility, Greeks)
 - Automated confidence scoring and trading insights
 - Alert system for meaningful changes
 - Desktop-first responsive design
 - Auto-refresh during market hours
+
+### 1.4 Implementation Phases
+
+**Phase 1: UI/UX with Mock Data (Current Phase)**
+- Build Radar tab dashboard layout with mock data
+- Implement ticker sliders (collapsed and expanded views)
+- Design and implement all agent sections with static mock data
+- Finalize information architecture and visual design
+- Test responsive layouts (desktop, tablet, mobile)
+- Refine UI/UX based on feedback before backend integration
+
+**Phase 2: Backend Integration**
+- Integrate OpenAI agent workflows for real-time analysis
+- Implement frontend-triggered updates with configurable intervals
+- Connect to market data APIs
+- Deploy production-ready agents
 
 ---
 
@@ -73,7 +89,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 **FR-1.1: Tab Navigation**
 
 - MUST show navbar at top of application with two tabs: "Chat" and "Radar"
-- "Chat" tab MUST display existing chat interface with LangGraph agent
+- "Chat" tab MUST display existing chat interface with OpenAI agent
 - "Radar" tab MUST display the agent dashboard (market overview + ticker sliders)
 - MUST highlight active tab with visual indicator
 - MUST preserve user state when switching between tabs
@@ -456,9 +472,145 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ---
 
-## 4. Non-Functional Requirements
+## 4. Phase 1: Mock Data Specifications
 
-### 4.1 Performance
+### 4.1 Purpose of Mock Data Phase
+
+The mock data phase allows us to:
+- Rapidly iterate on UI/UX design without backend dependencies
+- Validate information architecture with real-looking data
+- Test responsive layouts across devices
+- Gather user feedback on presentation and usability
+- Establish frontend data structures before API integration
+
+### 4.2 Mock Data Requirements
+
+**MOCK-1: Market Overview Data**
+
+```json
+{
+  "spy": {
+    "price": 450.25,
+    "change_percent": 0.75,
+    "trend": "bullish"
+  },
+  "qqq": {
+    "price": 375.80,
+    "change_percent": 1.20,
+    "trend": "bullish"
+  },
+  "vix": {
+    "level": 15.5,
+    "direction": "down",
+    "interpretation": "Low"
+  },
+  "market_sentiment": "Bullish",
+  "total_alerts": 3,
+  "last_updated": "2025-10-17T14:35:12Z"
+}
+```
+
+**MOCK-2: Ticker Mock Data**
+
+Create 3-4 example tickers with varied scenarios:
+
+1. **AAPL** - Strong bullish setup (high confidence ~85)
+2. **TSLA** - Mixed signals (medium confidence ~55)
+3. **SPY** - Neutral/ranging (medium-low confidence ~45)
+4. **NVDA** - Bearish setup (low confidence ~30)
+
+**MOCK-3: Agent Response Format**
+
+Each agent should return mock data matching this structure:
+
+```json
+{
+  "ticker": "AAPL",
+  "agent_type": "momentum",
+  "status": "Strong Up",
+  "confidence_contribution": 23,
+  "data_points": [
+    { "label": "Price Trend", "value": "+2.3% (Bullish)" },
+    { "label": "Volume", "value": "125% above average" },
+    { "label": "Relative Strength", "value": "Outperforming SPY by 1.8%" },
+    { "label": "20-Day MA", "value": "$178.50 (above)" }
+  ],
+  "what_changed": "Price broke above 20-day resistance at $180 with strong volume, confirming bullish momentum continuation",
+  "does_it_matter": "Yes - breakout on 2x average volume suggests institutional accumulation and shift in sentiment",
+  "what_to_do": "Consider bullish call spreads targeting $185-190; watch for pullback to $175 support for entry",
+  "alerts": [
+    {
+      "type": "breakout",
+      "severity": "high",
+      "message": "Breakout above $180 resistance on 2x average volume",
+      "timestamp": "2025-10-17T14:30:00Z"
+    }
+  ],
+  "last_updated": "2025-10-17T14:35:12Z"
+}
+```
+
+**MOCK-4: Mock Data for Each Agent Type**
+
+Frontend MUST include realistic mock data for:
+- **Momentum Agent**: Price trends, volume, breakouts, support/resistance
+- **Flow Agent**: Options flow, dark pool activity, institutional positioning
+- **Volatility Agent**: IV rank, IV vs RV, term structure, catalyst events
+- **Greeks Agent**: Gamma walls, max pain levels, delta exposure, pin zones
+
+**MOCK-5: Varied Scenarios**
+
+Mock data MUST demonstrate:
+- ✅ High confidence bullish setup (all agents aligned green)
+- ✅ High confidence bearish setup (all agents aligned red)
+- ✅ Mixed signals (agents conflicting, yellow/red mix)
+- ✅ Neutral/ranging ticker (mostly yellow)
+- ✅ Ticker with multiple alerts
+- ✅ Ticker with no alerts
+- ✅ Different agent statuses per ticker
+
+### 4.3 Phase 1 Implementation Requirements
+
+**PHASE1-1: No Backend Integration**
+- MUST use hardcoded mock data (JSON files or TypeScript constants)
+- MUST NOT call any external APIs during Phase 1
+- MUST NOT implement real timers (can simulate with manual refresh)
+- Agent toggle/interval controls MAY be non-functional or simulated
+
+**PHASE1-2: Focus Areas**
+- MUST implement complete UI for Radar tab
+- MUST implement ticker slider collapsed view
+- MUST implement ticker slider expanded view with all agent sections
+- MUST implement responsive layouts
+- MUST implement expand/collapse animations
+- SHOULD implement drag-and-drop reordering (can use mock persistence)
+
+**PHASE1-3: Excluded from Phase 1**
+- Real-time updates and timers
+- Backend API integration
+- Real market data
+- User authentication (can use mock user)
+- Database persistence (use localStorage for UI state)
+
+### 4.4 Phase 1 Acceptance Criteria
+
+**Phase 1 is complete when:**
+
+✅ Radar tab displays market overview with mock data
+✅ Can add/remove tickers (from predefined mock list)
+✅ Ticker sliders show confidence scores and agent status indicators
+✅ Can expand ticker to see all 4 agent sections with mock analysis
+✅ Trading insights section displays synthesized guidance
+✅ Alerts display correctly when present in mock data
+✅ Layout is responsive on desktop, tablet, and mobile
+✅ UI/UX is polished and ready for user feedback
+✅ Mock data demonstrates all key scenarios (bullish, bearish, mixed, neutral)
+
+---
+
+## 5. Non-Functional Requirements
+
+### 5.1 Performance
 
 **NFR-1: Page Load Time**
 
@@ -488,7 +640,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - Each user with 20 tickers × 4 agents = max 80 active timers
 - Backend MUST handle burst traffic when multiple users' timers align
 
-### 4.2 Reliability
+### 5.2 Reliability
 
 **NFR-5: Uptime**
 
@@ -502,7 +654,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST fall back to last known good data
 - Frontend MUST handle network failures gracefully without crashing
 
-### 4.3 Usability
+### 5.3 Usability
 
 **NFR-7: Learning Curve**
 
@@ -518,7 +670,7 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 - MUST have sufficient color contrast (not relying only on color)
 - Toggle switches and controls MUST be keyboard accessible
 
-### 4.4 Security
+### 5.4 Security
 
 **NFR-9: Authentication**
 
@@ -534,9 +686,9 @@ An automated intelligence dashboard that continuously analyzes traders' watchlis
 
 ---
 
-## 5. API Integration Requirements
+## 6. API Integration Requirements (Phase 2)
 
-### 5.1 OpenAI Agent Workflow Architecture
+### 6.1 OpenAI Agent Workflow Architecture
 
 **INT-1: Agent API Endpoints**
 
@@ -614,9 +766,9 @@ Error response format:
 
 ---
 
-## 6. Success Criteria
+## 7. Success Criteria
 
-### 6.1 User Metrics
+### 7.1 User Metrics
 
 **Success means:**
 
@@ -625,7 +777,7 @@ Error response format:
 - Alert users to meaningful changes within 60 seconds
 - 80% of users keep dashboard open during entire trading session
 
-### 6.2 Technical Metrics
+### 7.2 Technical Metrics
 
 **Success means:**
 
@@ -634,7 +786,7 @@ Error response format:
 - 99% uptime during market hours
 - <1% error rate on API calls
 
-### 6.3 Feature Adoption
+### 7.3 Feature Adoption
 
 **Success means:**
 
@@ -645,7 +797,7 @@ Error response format:
 
 ---
 
-## 7. Out of Scope (Not in MVP)
+## 8. Out of Scope (Not in MVP)
 
 **The following are explicitly NOT included in MVP:**
 
@@ -667,7 +819,7 @@ These MAY be considered for future versions based on MVP feedback.
 
 ---
 
-## 8. Open Questions & Decisions Needed
+## 9. Open Questions & Decisions Needed
 
 **Q1: Single vs Multiple Expanded Tickers**
 
@@ -696,12 +848,29 @@ These MAY be considered for future versions based on MVP feedback.
 
 ---
 
-## 9. Acceptance Criteria
+## 10. Acceptance Criteria
 
-**The MVP is complete when:**
+### 10.1 Phase 1 Acceptance (Mock Data - Current Focus)
+
+**Phase 1 is complete when:**
+
+✅ Radar tab displays market overview with mock data
+✅ Can add/remove tickers (from predefined mock list)
+✅ Ticker sliders show confidence scores and 4 agent status indicators
+✅ Can expand ticker to see all 4 agent sections with detailed mock analysis
+✅ Trading insights section displays synthesized guidance
+✅ Alerts display correctly when present in mock data
+✅ Layout is responsive on desktop, tablet, and mobile
+✅ Expand/collapse animations are smooth
+✅ UI/UX is polished and ready for user feedback
+✅ Mock data demonstrates all key scenarios (bullish, bearish, mixed, neutral)
+
+### 10.2 Phase 2 Acceptance (Full MVP Integration)
+
+**The full MVP is complete when:**
 
 ✅ Navbar with Chat and Radar tabs is functional
-✅ Chat tab preserves existing LangGraph agent functionality
+✅ Chat tab preserves existing OpenAI agent chat functionality
 ✅ Radar tab displays the agent dashboard
 ✅ User can add/remove tickers to watchlist (Radar tab)
 ✅ Dashboard shows market overview (SPY/QQQ/VIX) in Radar tab
