@@ -68,6 +68,7 @@ export function ChatKitPanel({
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };
@@ -242,6 +243,22 @@ export function ChatKitPanel({
           setErrorState({ session: null, integration: null });
         }
 
+        if (isDev) {
+          console.info("[ChatKitPanel] session created successfully, returning client secret");
+        }
+
+        // Set initializing to false on success - use setTimeout to ensure state update happens
+        if (isMountedRef.current) {
+          setTimeout(() => {
+            if (isMountedRef.current) {
+              setIsInitializingSession(false);
+              if (isDev) {
+                console.info("[ChatKitPanel] isInitializingSession set to false");
+              }
+            }
+          }, 0);
+        }
+
         return clientSecret;
       } catch (error) {
         console.error("Failed to create ChatKit session", error);
@@ -251,12 +268,9 @@ export function ChatKitPanel({
             : "Unable to start ChatKit session.";
         if (isMountedRef.current) {
           setErrorState({ session: detail, retryable: false });
-        }
-        throw error instanceof Error ? error : new Error(detail);
-      } finally {
-        if (isMountedRef.current && !currentSecret) {
           setIsInitializingSession(false);
         }
+        throw error instanceof Error ? error : new Error(detail);
       }
     },
     [isWorkflowConfigured, setErrorState]

@@ -1,6 +1,7 @@
-import { WORKFLOW_ID } from "@/lib/config";
+import { WORKFLOW_ID } from "@/lib/config"
+import { createClient } from "@/lib/supabase/server"
 
-export const runtime = "edge";
+// Remove edge runtime to use Node.js runtime (free on Vercel)
 
 interface CreateSessionRequestBody {
   workflow?: { id?: string | null } | null;
@@ -46,6 +47,7 @@ export async function POST(request: Request): Promise<Response> {
     if (process.env.NODE_ENV !== "production") {
       console.info("[create-session] handling request", {
         resolvedWorkflowId,
+        userId,
         body: JSON.stringify(parsedBody),
       });
     }
@@ -150,23 +152,44 @@ async function resolveUserId(request: Request): Promise<{
   userId: string;
   sessionCookie: string | null;
 }> {
+  // Simple approach: use Supabase server client
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user?.id) {
+      if (process.env.NODE_ENV !== "production") {
+        console.info("[resolveUserId] Using Supabase user ID:", user.id)
+      }
+      return { userId: user.id, sessionCookie: null }
+    }
+  } catch (error) {
+    console.error("[resolveUserId] Error getting Supabase user:", error)
+  }
+
+  // Fallback: check for existing ChatKit session or generate new one
   const existing = getCookieValue(
     request.headers.get("cookie"),
     SESSION_COOKIE_NAME
-  );
+  )
   if (existing) {
-    return { userId: existing, sessionCookie: null };
+    return { userId: existing, sessionCookie: null }
   }
 
   const generated =
     typeof crypto.randomUUID === "function"
       ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2);
+      : Math.random().toString(36).slice(2)
+
+  console.warn(
+    "[resolveUserId] No Supabase user found, generating random ID:",
+    generated
+  )
 
   return {
     userId: generated,
     sessionCookie: serializeSessionCookie(generated),
-  };
+  }
 }
 
 function getCookieValue(
