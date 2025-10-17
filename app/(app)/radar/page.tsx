@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 type Trend = "up" | "down" | "flat"
 
@@ -203,6 +204,31 @@ const watchlist = [
   },
 ]
 
+const agentThemes: Record<string, { background: string; accent: string }> = {
+  momentum: {
+    background: "bg-muted/30",
+    accent: "text-foreground",
+  },
+  flow: {
+    background: "bg-muted/40",
+    accent: "text-muted-foreground",
+  },
+  volatility: {
+    background: "bg-muted/50",
+    accent: "text-foreground/80",
+  },
+  greeks: {
+    background: "bg-muted/60",
+    accent: "text-muted-foreground",
+  },
+  default: {
+    background: "bg-muted/30",
+    accent: "text-foreground",
+  },
+}
+
+type AgentInsight = (typeof watchlist)[number]["agents"][number]
+
 function TrendIcon({ trend }: { trend: Trend }) {
   if (trend === "up") {
     return <ArrowUpRight className="size-4 text-emerald-500" aria-hidden="true" />
@@ -211,6 +237,21 @@ function TrendIcon({ trend }: { trend: Trend }) {
     return <ArrowDownRight className="size-4 text-rose-500" aria-hidden="true" />
   }
   return <Minus className="size-4 text-muted-foreground" aria-hidden="true" />
+}
+
+function formatSentence(text: string | undefined) {
+  if (!text) return null
+  const trimmed = text.trim()
+  if (!trimmed) return null
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`
+}
+
+function buildAgentReasoning(agent: AgentInsight) {
+  return [
+    formatSentence(agent.summary),
+    formatSentence(`Desk reads: ${agent.signal} (confidence ${agent.confidence}%).`),
+    formatSentence(`${agent.kpiLabel} sits at ${agent.kpiValue} (${agent.change}).`),
+  ].filter(Boolean) as string[]
 }
 
 export default function RadarPage() {
@@ -269,66 +310,112 @@ export default function RadarPage() {
               key={item.ticker}
               className="border-border/60 transition-colors hover:border-border"
             >
-              <CardHeader className="space-y-3 border-b border-border/60 px-4 py-3">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="max-w-xl space-y-1">
-                    <CardTitle className="text-xl font-semibold leading-tight tracking-tight">
+              <CardHeader className="border-b border-border/60 px-4 py-2.5">
+                <div className="grid gap-y-1.5 text-sm">
+                  <div className="grid min-w-0 grid-cols-[minmax(120px,1fr)_repeat(3,minmax(140px,1fr))_minmax(120px,auto)] items-baseline gap-3">
+                    <CardTitle className="text-lg font-semibold tracking-tight text-foreground">
                       {item.ticker}
                     </CardTitle>
-                    <CardDescription className="text-sm leading-6 text-muted-foreground">
-                      {item.status}
-                    </CardDescription>
-                  </div>
-                  <div className="inline-flex items-center rounded-md border border-emerald-600/30 bg-emerald-500/10 px-4 py-1.5 text-base font-semibold text-emerald-600">
-                    {item.confidence}% confidence
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-4 text-sm">
-                  {item.overviewKpis.map((kpi) => (
-                    <div key={kpi.label} className="min-w-[140px]">
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {item.overviewKpis.slice(0, 3).map((kpi) => (
+                      <span
+                        key={`${item.ticker}-${kpi.label}-label`}
+                        className="text-xs uppercase tracking-wide text-muted-foreground"
+                      >
                         {kpi.label}
-                      </p>
-                      <p className="text-sm font-semibold text-foreground">{kpi.value}</p>
-                    </div>
-                  ))}
+                      </span>
+                    ))}
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Confidence
+                    </span>
+                  </div>
+                  <div className="grid min-w-0 grid-cols-[minmax(120px,1fr)_repeat(3,minmax(140px,1fr))_minmax(120px,auto)] items-start gap-3">
+                    <span className="truncate text-sm text-muted-foreground">{item.status}</span>
+                    {item.overviewKpis.slice(0, 3).map((kpi) => (
+                      <span
+                        key={`${item.ticker}-${kpi.label}-value`}
+                        className="text-sm font-semibold text-foreground"
+                      >
+                        {kpi.value}
+                      </span>
+                    ))}
+                    <span className="text-sm font-semibold tabular-nums text-foreground">
+                      {item.confidence}%
+                    </span>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="px-4 pb-4 pt-3">
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {item.agents.map((agent) => (
-                    <div
-                      key={agent.id}
-                      className="flex min-h-[148px] flex-col justify-between rounded-lg border border-border/50 bg-muted/10 p-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                          {agent.label}
-                        </p>
-                        <span className="text-sm font-semibold text-foreground">
-                          {agent.confidence}%
-                        </span>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                  {item.agents.map((agent) => {
+                    const theme = agentThemes[agent.id] ?? agentThemes.default
+                    const reasoning = buildAgentReasoning(agent)
+
+                    return (
+                      <div
+                        key={agent.id}
+                        className={cn(
+                          "flex min-h-[228px] flex-col rounded-xl bg-card/90 p-4 shadow-sm ring-1 ring-inset ring-border/40 transition-all",
+                          theme.background
+                        )}
+                      >
+                        <div className="flex items-start justify-between">
+                          <p
+                            className={cn(
+                              "text-[10px] font-semibold uppercase tracking-[0.3em]",
+                              theme.accent
+                            )}
+                          >
+                            {agent.label}
+                          </p>
+                          <div className="text-right">
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.26em] text-muted-foreground">
+                              Focus Metric
+                            </span>
+                            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                              {agent.kpiLabel}
+                            </p>
+                            <p className="text-xl font-semibold leading-none text-foreground">
+                              {agent.kpiValue}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex items-end justify-between">
+                          <div>
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+                              Confidence
+                            </span>
+                            <div className="mt-1 flex items-baseline gap-1 text-foreground">
+                              <span className="text-5xl font-semibold leading-none tracking-tight">
+                                {agent.confidence}
+                              </span>
+                              <span className="text-2xl font-semibold leading-none text-foreground/60">%</span>
+                            </div>
+                            <span className="mt-3 inline-block text-[10px] font-medium uppercase tracking-[0.26em] text-muted-foreground">
+                              Δ {agent.change}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-6">
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                            Signal
+                          </span>
+                          <p className="mt-2 text-base font-semibold leading-snug text-foreground">
+                            {agent.signal}
+                          </p>
+                        </div>
+                        <div className="mt-4">
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                            Reasoning
+                          </span>
+                          <div className="mt-2 space-y-1.5 text-sm leading-relaxed text-muted-foreground">
+                            {reasoning.map((sentence, index) => (
+                              <p key={`${agent.id}-reasoning-${index}`}>{sentence}</p>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <p className="mt-1 text-base font-semibold leading-snug text-foreground">
-                        {agent.signal}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">{agent.summary}</p>
-                      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                        <div>
-                          <dt className="uppercase tracking-wide">{agent.kpiLabel}</dt>
-                          <dd className="text-sm font-semibold text-foreground">
-                            {agent.kpiValue}
-                          </dd>
-                        </div>
-                        <div className="text-right">
-                          <dt className="uppercase tracking-wide">Change</dt>
-                          <dd className="text-sm font-semibold text-foreground">
-                            {agent.change}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
