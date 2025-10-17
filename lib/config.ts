@@ -1,7 +1,7 @@
-import {
+import type {
+  ChatKitOptions,
   ColorScheme,
   StartScreenPrompt,
-  ThemeOption,
 } from "@openai/chatkit";
 
 export const WORKFLOW_ID =
@@ -29,7 +29,9 @@ export const GREETING = "How can I help you today?";
 export const DISCLAIMER_TEXT =
   "Not financial advice. AI can make mistakes. Always verify data.";
 
-const TYPOGRAPHY: ThemeOption["typography"] = {
+type ChatKitTheme = NonNullable<ChatKitOptions["theme"]>;
+
+const TYPOGRAPHY: ChatKitTheme["typography"] = {
   baseSize: 16,
   fontFamily:
     '"OpenAI Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
@@ -47,49 +49,19 @@ const TYPOGRAPHY: ThemeOption["typography"] = {
   ],
 };
 
-const LIGHT_THEME: ThemeOption = {
-  colorScheme: "light",
+const BASE_THEME: Omit<ChatKitTheme, "colorScheme"> = {
   radius: "round",
   density: "compact",
   typography: TYPOGRAPHY,
   color: {
-    surface: {
-      background: "#ffffff",
-      foreground: "#111111",
-    },
     grayscale: {
       hue: 0,
       tint: 0,
-      shade: -2,
-    },
-    accent: {
-      primary: "#111111",
-      level: 1,
     },
   },
 };
 
-const DARK_THEME: ThemeOption = {
-  colorScheme: "dark",
-  radius: "round",
-  density: "compact",
-  typography: TYPOGRAPHY,
-  color: {
-    surface: {
-      background: "#111111",
-      foreground: "#f5f5f5",
-    },
-    grayscale: {
-      hue: 0,
-      tint: 0,
-      shade: 2,
-    },
-    accent: {
-      primary: "#f5f5f5",
-      level: 1,
-    },
-  },
-};
-
-export const getThemeConfig = (theme: ColorScheme): ThemeOption =>
-  theme === "dark" ? DARK_THEME : LIGHT_THEME;
+export const getThemeConfig = (theme: ColorScheme): ChatKitTheme => ({
+  ...BASE_THEME,
+  colorScheme: theme,
+});
