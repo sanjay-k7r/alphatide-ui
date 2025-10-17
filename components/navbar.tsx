@@ -14,7 +14,7 @@ export function Navbar({ userEmail }: NavbarProps) {
   const { openMobilePanel } = useQuestionsPanel()
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background">
+    <header className="z-50 border-b border-border bg-background md:sticky md:top-0">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
         {/* Logo */}
         <div className="flex items-center gap-2">
