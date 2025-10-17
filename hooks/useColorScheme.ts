@@ -6,6 +6,7 @@ export type ColorScheme = "light" | "dark";
 export type ColorSchemePreference = ColorScheme | "system";
 
 const STORAGE_KEY = "chatkit-color-scheme";
+const COLOR_SCHEME_EVENT = "chatkit-color-scheme-change";
 const PREFERS_DARK_QUERY = "(prefers-color-scheme: dark)";
 
 type MediaQueryCallback = (event: MediaQueryListEvent) => void;
@@ -90,6 +91,18 @@ function persistPreference(preference: ColorSchemePreference): void {
   }
 }
 
+function broadcastPreference(preference: ColorSchemePreference): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent<ColorSchemePreference>(COLOR_SCHEME_EVENT, {
+      detail: preference,
+    })
+  );
+}
+
 function applyDocumentScheme(scheme: ColorScheme): void {
   if (typeof document === "undefined") {
     return;
@@ -156,16 +169,47 @@ export function useColorScheme(
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handlePreferenceChange = (event: Event) => {
+      const preference = (event as CustomEvent<ColorSchemePreference>).detail;
+      if (!preference) {
+        return;
+      }
+
+      setPreferenceState((current) =>
+        current === preference ? current : preference
+      );
+    };
+
+    window.addEventListener(
+      COLOR_SCHEME_EVENT,
+      handlePreferenceChange as EventListener
+    );
+    return () => {
+      window.removeEventListener(
+        COLOR_SCHEME_EVENT,
+        handlePreferenceChange as EventListener
+      );
+    };
+  }, []);
+
   const setPreference = useCallback((next: ColorSchemePreference) => {
     setPreferenceState(next);
+    broadcastPreference(next);
   }, []);
 
   const setScheme = useCallback((next: ColorScheme) => {
     setPreferenceState(next);
+    broadcastPreference(next);
   }, []);
 
   const resetPreference = useCallback(() => {
     setPreferenceState("system");
+    broadcastPreference("system");
   }, []);
 
   return {
