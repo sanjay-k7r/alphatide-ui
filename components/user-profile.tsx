@@ -46,13 +46,13 @@ export function UserProfile({ userEmail }: UserProfileProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:hover:bg-white/10">
         <Avatar className="size-8">
-          <AvatarFallback className="bg-blue-600 text-white">
+          <AvatarFallback className="bg-black text-white dark:bg-white dark:text-black">
             {getInitials(userEmail)}
           </AvatarFallback>
         </Avatar>
-        <span className="hidden text-sm text-white sm:inline-block">
+        <span className="hidden text-sm text-black dark:text-white sm:inline-block">
           {userEmail || "No email"}
         </span>
       </DropdownMenuTrigger>

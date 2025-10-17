@@ -15,12 +15,14 @@ export default function AppLayout({
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header with logo and user profile */}
-      <header className="sticky top-0 z-50 border-b border-gray-800 bg-gray-950">
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-transparent backdrop-blur-sm dark:border-white/10">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <Waves className="size-8 text-blue-500" />
-            <span className="text-xl font-bold text-white">Alphatide</span>
+            <Waves className="size-8 text-black dark:text-white" />
+            <span className="text-xl font-bold text-black dark:text-white">
+              Alphatide
+            </span>
           </div>
 
           {/* User Profile */}
