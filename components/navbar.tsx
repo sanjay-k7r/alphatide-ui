@@ -42,7 +42,7 @@ export function Navbar({ userEmail }: NavbarProps) {
 
         {/* Tab navigation */}
         <nav className="flex flex-1 justify-center">
-          <div className="flex w-full max-w-xs items-center gap-1 rounded-full border border-border/60 bg-muted/30 p-1 shadow-sm">
+          <div className="flex w-full max-w-xs items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1.5 shadow-sm">
             {APP_TABS.map((tab) => {
               const isActive = tab.id === activeTab
               return (
@@ -52,10 +52,10 @@ export function Navbar({ userEmail }: NavbarProps) {
                   prefetch
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    "flex-1 rounded-md px-3 py-1.5 text-center text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     isActive
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-foreground text-background shadow-sm"
+                      : "text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
                   )}
                 >
                   {tab.label}
