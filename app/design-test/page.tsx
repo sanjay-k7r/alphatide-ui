@@ -90,14 +90,14 @@ export default function DesignTestPage() {
                 <div className="flex items-center justify-between rounded-lg border border-border bg-background p-3">
                   <div className="flex items-center gap-2">
                     <ArrowUpRight className="size-4 text-emerald-500" />
-                    <span className="text-sm font-semibold text-emerald-500">+2.5%</span>
+                    <span className="text-base font-semibold text-emerald-500">+2.5%</span>
                   </div>
                   <span className="text-xs font-mono text-muted-foreground">Positive</span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-border bg-background p-3">
                   <div className="flex items-center gap-2">
                     <ArrowDownRight className="size-4 text-rose-500" />
-                    <span className="text-sm font-semibold text-rose-500">-1.8%</span>
+                    <span className="text-base font-semibold text-rose-500">-1.8%</span>
                   </div>
                   <span className="text-xs font-mono text-muted-foreground">Negative</span>
                 </div>
@@ -206,13 +206,13 @@ export default function DesignTestPage() {
                     <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Price
                     </span>
-                    <span className="font-semibold tabular-nums text-foreground">$512.40</span>
+                    <span className="text-lg font-semibold tabular-nums text-foreground">$512.40</span>
                   </div>
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Change
                     </span>
-                    <span className="text-sm font-semibold tabular-nums text-emerald-500">
+                    <span className="text-base font-semibold tabular-nums text-emerald-500">
                       +1.2%
                     </span>
                   </div>
@@ -220,7 +220,7 @@ export default function DesignTestPage() {
                     <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Confidence
                     </span>
-                    <span className="text-sm font-semibold tabular-nums text-foreground">82%</span>
+                    <span className="text-base font-semibold tabular-nums text-foreground">82%</span>
                   </div>
                 </div>
                 <div className="space-y-2 rounded-lg border border-border bg-background p-4">
@@ -459,7 +459,7 @@ export default function DesignTestPage() {
                       <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         {label}
                       </h3>
-                      <p className="text-lg font-semibold text-foreground">
+                      <p className="text-xl font-semibold text-foreground">
                         {idx === 0 ? "$512.40" : idx === 1 ? "$432.18" : idx === 2 ? "13.5" : "Bullish"}
                       </p>
                     </div>
@@ -472,7 +472,7 @@ export default function DesignTestPage() {
                   <div className="flex items-baseline justify-between text-xs text-muted-foreground">
                     <span
                       className={cn(
-                        "font-semibold",
+                        "text-sm font-semibold",
                         idx < 2 ? "text-emerald-500" : idx === 2 ? "text-rose-500" : ""
                       )}
                     >
@@ -501,7 +501,7 @@ export default function DesignTestPage() {
               ].map((agent) => (
                 <div
                   key={agent.label}
-                  className="flex min-h-[200px] flex-col rounded-xl bg-muted/40 p-4 shadow-sm transition-all hover:bg-muted/60"
+                  className="flex min-h-[200px] flex-col rounded-xl border border-border/50 bg-card p-4 shadow-sm transition-colors hover:border-border"
                 >
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
