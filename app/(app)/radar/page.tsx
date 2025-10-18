@@ -204,26 +204,44 @@ const watchlist = [
   },
 ]
 
-const agentThemes: Record<string, { background: string; accent: string }> = {
+const agentThemes: Record<
+  string,
+  { card: string; accent: string; metric: string; confidence: string; delta: string }
+> = {
   momentum: {
-    background: "bg-muted/30",
-    accent: "text-foreground",
+    card: "bg-zinc-50 ring-zinc-300/70 dark:bg-zinc-900 dark:ring-zinc-700/70",
+    accent: "text-zinc-500 dark:text-zinc-400",
+    metric: "text-zinc-900 dark:text-zinc-100",
+    confidence: "text-zinc-950 dark:text-zinc-50",
+    delta: "text-zinc-500 dark:text-zinc-400",
   },
   flow: {
-    background: "bg-muted/40",
-    accent: "text-muted-foreground",
+    card: "bg-zinc-100 ring-zinc-300/70 dark:bg-zinc-900/90 dark:ring-zinc-700/70",
+    accent: "text-zinc-500 dark:text-zinc-400",
+    metric: "text-zinc-900 dark:text-zinc-100",
+    confidence: "text-zinc-950 dark:text-zinc-50",
+    delta: "text-zinc-500 dark:text-zinc-400",
   },
   volatility: {
-    background: "bg-muted/50",
-    accent: "text-foreground/80",
+    card: "bg-zinc-200 ring-zinc-400/70 dark:bg-zinc-900/80 dark:ring-zinc-700/70",
+    accent: "text-zinc-600 dark:text-zinc-400",
+    metric: "text-zinc-900 dark:text-zinc-50",
+    confidence: "text-zinc-950 dark:text-zinc-50",
+    delta: "text-zinc-600 dark:text-zinc-400",
   },
   greeks: {
-    background: "bg-muted/60",
-    accent: "text-muted-foreground",
+    card: "bg-zinc-300 ring-zinc-500/70 dark:bg-zinc-900/70 dark:ring-zinc-700/70",
+    accent: "text-zinc-600 dark:text-zinc-400",
+    metric: "text-zinc-900 dark:text-zinc-50",
+    confidence: "text-zinc-950 dark:text-zinc-50",
+    delta: "text-zinc-600 dark:text-zinc-400",
   },
   default: {
-    background: "bg-muted/30",
-    accent: "text-foreground",
+    card: "bg-zinc-100 ring-zinc-300/70 dark:bg-zinc-900 dark:ring-zinc-700/70",
+    accent: "text-zinc-500 dark:text-zinc-400",
+    metric: "text-zinc-900 dark:text-zinc-100",
+    confidence: "text-zinc-950 dark:text-zinc-50",
+    delta: "text-zinc-500 dark:text-zinc-400",
   },
 }
 
@@ -272,7 +290,7 @@ export default function RadarPage() {
           {marketSnapshot.map((item) => (
             <article
               key={item.label}
-              className="flex h-[96px] flex-col justify-between rounded-lg border border-border/60 bg-card px-4 py-3 shadow-sm"
+              className="flex h-[96px] flex-col justify-between rounded-lg border border-border/50 bg-card px-4 py-3 shadow-sm dark:bg-zinc-900"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -308,7 +326,7 @@ export default function RadarPage() {
           {watchlist.map((item) => (
             <Card
               key={item.ticker}
-              className="border-border/60 transition-colors hover:border-border"
+              className="border border-border/60 bg-muted/30 shadow-sm transition-colors hover:border-border dark:bg-zinc-900"
             >
               <CardHeader className="border-b border-border/60 px-4 py-2.5">
                 <div className="grid gap-y-1.5 text-sm">
@@ -351,13 +369,13 @@ export default function RadarPage() {
                     const reasoning = buildAgentReasoning(agent)
 
                     return (
-                      <div
-                        key={agent.id}
-                        className={cn(
-                          "flex min-h-[220px] flex-col rounded-xl bg-card/90 p-4 shadow-sm ring-1 ring-inset ring-border/40 transition-all",
-                          theme.background
-                        )}
-                      >
+                          <div
+                            key={agent.id}
+                            className={cn(
+                              "flex min-h-[220px] flex-col rounded-xl p-4 shadow-sm ring-1 ring-inset transition-all",
+                              theme.card
+                            )}
+                          >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <p
@@ -373,24 +391,44 @@ export default function RadarPage() {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                            <p
+                              className={cn(
+                                "text-[10px] font-semibold uppercase tracking-[0.24em]",
+                                theme.accent
+                              )}
+                            >
                               {agent.kpiLabel}
                             </p>
-                            <p className="mt-1 text-xl font-semibold leading-none text-foreground">
+                            <p
+                              className={cn(
+                                "mt-1 text-xl font-semibold leading-none",
+                                theme.metric
+                              )}
+                            >
                               {agent.kpiValue}
                             </p>
                           </div>
                         </div>
                         <div className="mt-6 flex items-end justify-between gap-4">
-                          <div className="flex items-end gap-2 text-foreground">
-                            <span className="text-5xl font-semibold leading-none tracking-tight">
+                          <div className="flex items-end gap-2">
+                            <span
+                              className={cn(
+                                "text-5xl font-semibold leading-none tracking-tight",
+                                theme.confidence
+                              )}
+                            >
                               {agent.confidence}
                             </span>
-                            <span className="pb-1 text-lg font-semibold uppercase tracking-[0.24em] text-foreground/70">
+                            <span className="pb-1 text-lg font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                               %
                             </span>
                           </div>
-                          <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                          <span
+                            className={cn(
+                              "text-[11px] font-medium uppercase tracking-[0.2em]",
+                              theme.delta
+                            )}
+                          >
                             Δ {agent.change}
                           </span>
                         </div>
