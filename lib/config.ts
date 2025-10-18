@@ -73,6 +73,8 @@ const BASE_THEME: Omit<ChatKitTheme, "colorScheme"> = {
   radius: "round",
   density: "compact",
   typography: TYPOGRAPHY,
+  color: {
+<<<<<<< ours
 };
 
 const THEME_COLORS: Record<ColorScheme, NonNullable<ChatKitTheme["color"]>> = {
@@ -86,29 +88,13 @@ const THEME_COLORS: Record<ColorScheme, NonNullable<ChatKitTheme["color"]>> = {
       level: 2,
     },
     grayscale: {
-      hue: 220,
-      tint: 3,
-    },
-  },
-  dark: {
-    surface: {
-      background: "#15161c",
-      foreground: "#f3f4f8",
-    },
-    accent: {
-      primary: "#4f6bff",
-      level: 1,
-    },
-    grayscale: {
-      hue: 220,
-      tint: 8,
-      shade: 1,
+      hue: 0,
+      tint: 0,
     },
   },
 };
 
 export const getThemeConfig = (theme: ColorScheme): ChatKitTheme => ({
   ...BASE_THEME,
-  color: THEME_COLORS[theme],
   colorScheme: theme,
 });
