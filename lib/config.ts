@@ -45,7 +45,27 @@ const TYPOGRAPHY: ChatKitTheme["typography"] = {
       style: "normal",
       display: "swap",
     },
-    // add the rest of your font sources here
+    {
+      family: "OpenAI Sans",
+      src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Medium.woff2",
+      weight: 500,
+      style: "normal",
+      display: "swap",
+    },
+    {
+      family: "OpenAI Sans",
+      src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-SemiBold.woff2",
+      weight: 600,
+      style: "normal",
+      display: "swap",
+    },
+    {
+      family: "OpenAI Sans",
+      src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Bold.woff2",
+      weight: 700,
+      style: "normal",
+      display: "swap",
+    },
   ],
 };
 
@@ -53,15 +73,42 @@ const BASE_THEME: Omit<ChatKitTheme, "colorScheme"> = {
   radius: "round",
   density: "compact",
   typography: TYPOGRAPHY,
-  color: {
+};
+
+const THEME_COLORS: Record<ColorScheme, NonNullable<ChatKitTheme["color"]>> = {
+  light: {
+    surface: {
+      background: "#f7f8fa",
+      foreground: "#090b11",
+    },
+    accent: {
+      primary: "#355cff",
+      level: 2,
+    },
     grayscale: {
-      hue: 0,
-      tint: 0,
+      hue: 220,
+      tint: 3,
+    },
+  },
+  dark: {
+    surface: {
+      background: "#15161c",
+      foreground: "#f3f4f8",
+    },
+    accent: {
+      primary: "#4f6bff",
+      level: 1,
+    },
+    grayscale: {
+      hue: 220,
+      tint: 8,
+      shade: 1,
     },
   },
 };
 
 export const getThemeConfig = (theme: ColorScheme): ChatKitTheme => ({
   ...BASE_THEME,
+  color: THEME_COLORS[theme],
   colorScheme: theme,
 });
