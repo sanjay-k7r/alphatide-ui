@@ -29,59 +29,10 @@ export const GREETING = "How can I help you today?";
 export const DISCLAIMER_TEXT =
   "Not financial advice. AI can make mistakes. Always verify data.";
 
-type ChatKitTheme = NonNullable<ChatKitOptions["theme"]>;
+type ChatKitTheme = ChatKitOptions["theme"];
 
-const TYPOGRAPHY: ChatKitTheme["typography"] = {
-  baseSize: 16,
-  fontFamily:
-    '"OpenAI Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
-  fontFamilyMono:
-    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace',
-  fontSources: [
-    {
-      family: "OpenAI Sans",
-      src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Regular.woff2",
-      weight: 400,
-      style: "normal",
-      display: "swap",
-    },
-    {
-      family: "OpenAI Sans",
-      src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Medium.woff2",
-      weight: 500,
-      style: "normal",
-      display: "swap",
-    },
-    {
-      family: "OpenAI Sans",
-      src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-SemiBold.woff2",
-      weight: 600,
-      style: "normal",
-      display: "swap",
-    },
-    {
-      family: "OpenAI Sans",
-      src: "https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Bold.woff2",
-      weight: 700,
-      style: "normal",
-      display: "swap",
-    },
-  ],
-};
-
-const BASE_THEME: Omit<ChatKitTheme, "colorScheme"> = {
-  radius: "round",
-  density: "compact",
-  typography: TYPOGRAPHY,
-  color: {
-    grayscale: {
-      hue: 0,
-      tint: 0,
-    },
-  },
-};
-
-export const getThemeConfig = (theme: ColorScheme): ChatKitTheme => ({
-  ...BASE_THEME,
+export const getThemeConfig = (
+  theme: ColorScheme
+): ChatKitTheme => ({
   colorScheme: theme,
 });

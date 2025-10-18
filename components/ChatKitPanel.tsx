@@ -399,7 +399,7 @@ export const ChatKitPanel = forwardRef<ChatKitPanelHandle, ChatKitPanelProps>(
   }
 
   return (
-    <div className="relative flex h-[90vh] w-full flex-col overflow-hidden rounded-2xl bg-card pb-8 shadow-sm transition-colors">
+    <div className="relative flex h-[90vh] w-full flex-col overflow-hidden rounded-2xl">
       <ChatKit
         key={widgetInstanceKey}
         control={chatkit.control}
