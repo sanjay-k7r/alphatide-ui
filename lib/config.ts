@@ -74,19 +74,6 @@ const BASE_THEME: Omit<ChatKitTheme, "colorScheme"> = {
   density: "compact",
   typography: TYPOGRAPHY,
   color: {
-<<<<<<< ours
-};
-
-const THEME_COLORS: Record<ColorScheme, NonNullable<ChatKitTheme["color"]>> = {
-  light: {
-    surface: {
-      background: "#f7f8fa",
-      foreground: "#090b11",
-    },
-    accent: {
-      primary: "#355cff",
-      level: 2,
-    },
     grayscale: {
       hue: 0,
       tint: 0,
