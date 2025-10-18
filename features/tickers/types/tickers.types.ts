@@ -22,7 +22,17 @@ export interface UpdateTickerInput {
   is_public?: boolean
 }
 
-export function transformTickerFromDB(row: any): Ticker {
+type TickerRow = {
+  id: string
+  ticker: string
+  name: string | null
+  description: string | null
+  is_public: boolean | null
+  user_id: string | null
+  created_at: string
+}
+
+export function transformTickerFromDB(row: TickerRow): Ticker {
   return {
     id: row.id,
     ticker: row.ticker,

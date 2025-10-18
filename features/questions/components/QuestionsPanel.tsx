@@ -63,13 +63,13 @@ type FilteredQuestions = QuestionsByCategory;
 const CATEGORY_ITEM_CLASSES =
   "border border-transparent bg-transparent text-foreground hover:border-border hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-function getCategoryColors(_category: string) {
+function getCategoryColors() {
   return CATEGORY_ITEM_CLASSES;
 }
 
 const SUBCATEGORY_CLASSES = "border-border text-foreground/70";
 
-function getSubcategoryColors(_category: string) {
+function getSubcategoryColors() {
   return SUBCATEGORY_CLASSES;
 }
 
@@ -175,7 +175,7 @@ export function QuestionsPanel({
         setExpandedCategories(new Set([traderZone]));
       }
     }
-  }, [categories.join(",")]);
+  }, [categories]);
 
   const filteredQuestions = useMemo((): FilteredQuestions => {
     if (!searchQuery) {
@@ -668,7 +668,7 @@ function QuestionsPanelContent({
                       onClick={() => onToggleCategory(category)}
                       className={cn(
                         "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide transition-colors",
-                        getCategoryColors(category)
+                        getCategoryColors()
                       )}
                     >
                       {expandedCategories.has(category) ? (
@@ -695,7 +695,7 @@ function QuestionsPanelContent({
                                     <div
                                       className={cn(
                                         "ml-1 border-l-2 px-3 py-1 text-xs font-semibold uppercase tracking-wide",
-                                        getSubcategoryColors(category)
+                                        getSubcategoryColors()
                                       )}
                                     >
                                       {displaySubcategory}

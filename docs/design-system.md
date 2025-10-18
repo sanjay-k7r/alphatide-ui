@@ -171,7 +171,7 @@ font-bold        /* 700 - Sparingly for critical alerts */
 <span className="text-lg font-semibold tabular-nums">$512.40</span>
 
 /* Percentage changes */
-<span className="text-sm font-semibold tabular-nums text-emerald-500">+1.2%</span>
+<span className="text-base font-semibold tabular-nums text-emerald-500">+1.2%</span>
 
 /* Labels (uppercase, wide tracking) */
 <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -229,6 +229,15 @@ import { Button } from "@/components/ui/button"
 /* Ghost (minimal) */
 <Button variant="ghost" size="icon">
   <RefreshCw className="size-4" />
+</Button>
+
+/* Icon button with border (theme toggle, toolbars) */
+<Button
+  variant="ghost"
+  size="icon"
+  className="size-8 rounded border border-border bg-background hover:bg-muted"
+>
+  <Moon className="size-4" />
 </Button>
 
 /* Sizes */
@@ -334,6 +343,40 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
   </SheetContent>
 </Sheet>
 ```
+
+#### Theme Toggle
+
+```tsx
+import { Moon, Sun } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useColorScheme } from "@/hooks/useColorScheme"
+
+export function ThemeToggle() {
+  const { scheme, setScheme } = useColorScheme()
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setScheme(scheme === "dark" ? "light" : "dark")}
+      className="size-8 rounded border border-border bg-background hover:bg-muted"
+      aria-label="Toggle theme"
+    >
+      {scheme === "dark" ? (
+        <Sun className="size-4 text-foreground" />
+      ) : (
+        <Moon className="size-4 text-foreground" />
+      )}
+    </Button>
+  )
+}
+```
+
+**Key Features:**
+- Border for better contrast in dark mode
+- Less rounded (`rounded` instead of `rounded-md`)
+- Background color for visibility
+- Hover state with muted background
 
 ### Component Customization
 
@@ -797,12 +840,12 @@ Alerts: font-bold (700)
       <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         SPY
       </h2>
-      <p className="text-lg font-semibold text-foreground">$512.40</p>
+      <p className="text-xl font-semibold text-foreground">$512.40</p>
     </div>
     <TrendIcon trend="up" />
   </div>
   <div className="flex items-baseline justify-between text-xs text-muted-foreground">
-    <span className="font-semibold text-emerald-500">+1.2%</span>
+    <span className="text-sm font-semibold text-emerald-500">+1.2%</span>
     <span>
       Breadth:{" "}
       <span className="font-semibold text-foreground">68% advancers</span>
@@ -814,7 +857,7 @@ Alerts: font-bold (700)
 ### Agent Card
 
 ```tsx
-<div className="flex min-h-[200px] flex-col rounded-xl bg-muted/40 p-4 shadow-sm transition-all dark:bg-zinc-950/90">
+<div className="flex min-h-[200px] flex-col rounded-xl border border-border/50 bg-card p-4 shadow-sm transition-colors hover:border-border">
   <div className="flex items-baseline justify-between gap-3">
     <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
       MOMENTUM
@@ -824,7 +867,7 @@ Alerts: font-bold (700)
   <p className="mt-3 text-base font-semibold leading-tight text-foreground">
     Higher highs + rising volume.
   </p>
-  <p className="mt-4 text-sm leading-relaxed text-muted-foreground dark:text-zinc-300">
+  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
     Bullish breakout. RSI is holding at 68 with +14 pts / 24h. Prediction
     confidence 88%.
   </p>

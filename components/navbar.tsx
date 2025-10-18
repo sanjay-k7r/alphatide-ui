@@ -1,14 +1,13 @@
 "use client"
 
 import { useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { UserProfile } from "@/components/user-profile"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useQuestionsPanel } from "@/providers/questions-panel-provider"
 import { APP_TABS, TAB_STORAGE_KEY } from "@/lib/navigation"
-import { cn } from "@/lib/utils"
 import { MessageCircle, Waves } from "lucide-react"
 
 interface NavbarProps {
@@ -18,6 +17,7 @@ interface NavbarProps {
 export function Navbar({ userEmail }: NavbarProps) {
   const { openMobilePanel } = useQuestionsPanel()
   const pathname = usePathname()
+  const router = useRouter()
 
   const activeTab = pathname?.startsWith("/radar") ? "radar" : "chat"
 
@@ -28,6 +28,12 @@ export function Navbar({ userEmail }: NavbarProps) {
 
     window.localStorage.setItem(TAB_STORAGE_KEY, activeTab)
   }, [activeTab])
+
+  useEffect(() => {
+    APP_TABS.forEach((tab) => {
+      router.prefetch(tab.href)
+    })
+  }, [router])
 
   return (
     <header className="z-50 border-b border-border bg-background md:sticky md:top-0">
@@ -42,26 +48,33 @@ export function Navbar({ userEmail }: NavbarProps) {
 
         {/* Tab navigation */}
         <nav className="flex flex-1 justify-center">
-          <div className="flex w-full max-w-xs items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1.5 shadow-sm">
-            {APP_TABS.map((tab) => {
-              const isActive = tab.id === activeTab
-              return (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  prefetch
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex-1 rounded-md px-3 py-1.5 text-center text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                    isActive
-                      ? "bg-foreground text-background shadow-sm"
-                      : "text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
-                  )}
-                >
-                  {tab.label}
-                </Link>
-              )
-            })}
+          <div className="w-full max-w-xs">
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) => {
+                const nextTab = APP_TABS.find((tab) => tab.id === value)
+                if (!nextTab) {
+                  return
+                }
+                if (nextTab.href !== pathname) {
+                  router.push(nextTab.href)
+                }
+              }}
+              className="w-full"
+            >
+              <TabsList className="flex w-full">
+                {APP_TABS.map((tab) => (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    aria-label={tab.label}
+                    className="flex-1"
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
         </nav>
 

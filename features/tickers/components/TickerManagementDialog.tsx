@@ -103,9 +103,14 @@ export function TickerManagementDialog({
       tickerCache.invalidate()
       resetForm()
       onTickerMutated?.()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving ticker:", error)
-      if (error?.code === "23505") {
+      const errorCode =
+        typeof error === "object" && error !== null && "code" in error
+          ? (error as { code?: string }).code
+          : undefined
+
+      if (errorCode === "23505") {
         toast.error("Ticker already exists")
       } else {
         toast.error("Failed to save ticker")

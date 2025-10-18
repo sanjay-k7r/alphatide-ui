@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowUpRight, ArrowDownRight, RefreshCw, TrendingUp, Activity, BarChart3, Zap } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, RefreshCw, TrendingUp, Activity, BarChart3, Zap, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,11 +17,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function DesignTestPage() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [refreshCadence, setRefreshCadence] = useState("30s");
   const [alertsEnabled, setAlertsEnabled] = useState(true);
+  const [activeTab, setActiveTab] = useState<"overview" | "components">("overview");
+  const { scheme, setScheme } = useColorScheme();
 
   const triggerAnimation = () => {
     setIsAnimating(true);
@@ -32,20 +35,168 @@ export default function DesignTestPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-background">
-        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 lg:px-8">
+          {/* Logo */}
+          <div className="flex shrink-0 items-center gap-2">
             <TrendingUp className="size-5 text-foreground" />
             <h1 className="text-sm font-semibold tracking-tight">Design System Test</h1>
           </div>
-          <div className="text-xs text-muted-foreground">
-            Standalone preview • Not connected to app
+
+          {/* Tab navigation - matches navbar design from design-system.md */}
+          <nav className="flex flex-1 justify-center">
+            <div className="flex w-full max-w-xs items-center gap-1 rounded-full border border-border/60 bg-muted/30 p-1 shadow-sm">
+              <button
+                onClick={() => setActiveTab("overview")}
+                aria-current={activeTab === "overview" ? "page" : undefined}
+                className={cn(
+                  "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  activeTab === "overview"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab("components")}
+                aria-current={activeTab === "components" ? "page" : undefined}
+                className={cn(
+                  "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  activeTab === "components"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Components
+              </button>
+            </div>
+          </nav>
+
+          {/* Right section with theme toggle */}
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setScheme(scheme === "dark" ? "light" : "dark")}
+              className="size-8 rounded border border-border bg-background hover:bg-muted"
+              aria-label="Toggle theme"
+            >
+              {scheme === "dark" ? (
+                <Sun className="size-4 text-foreground" />
+              ) : (
+                <Moon className="size-4 text-foreground" />
+              )}
+            </Button>
+            <div className="hidden text-xs text-muted-foreground sm:block">
+              {scheme === "dark" ? "Dark" : "Light"} mode
+            </div>
           </div>
         </div>
       </header>
 
       <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-        {/* Color Palette */}
+        {/* Design System Adherence Note */}
         <section>
+          <Card className="border-border/50 bg-card shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-emerald-500/10 p-2">
+                  <TrendingUp className="size-5 text-emerald-600" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Following design-system.md
+                  </h2>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    All components on this page strictly follow the patterns documented in{" "}
+                    <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                      docs/design-system.md
+                    </code>
+                    . Use the tabs above to navigate between sections. Toggle theme with the button in the header.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-full border border-border bg-background px-2 py-1">
+                      shadcn/ui only
+                    </span>
+                    <span className="rounded-full border border-border bg-background px-2 py-1">
+                      Grayscale first
+                    </span>
+                    <span className="rounded-full border border-border bg-background px-2 py-1">
+                      Flat design
+                    </span>
+                    <span className="rounded-full border border-border bg-background px-2 py-1">
+                      Dense typography
+                    </span>
+                    <span className="rounded-full border border-border bg-background px-2 py-1">
+                      Micro-animations
+                    </span>
+                    <span className="rounded-full border border-border bg-background px-2 py-1">
+                      Fully responsive
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {activeTab === "overview" && (
+          <>
+            {/* Tab Button Example */}
+            <section>
+              <h2 className="mb-4 text-xl font-semibold tracking-tight">Tab Navigation</h2>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                    Pill-style Tab Buttons (per design-system.md)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      Active tab: <span className="font-semibold text-foreground">{activeTab}</span>
+                    </p>
+                    <div className="flex w-full max-w-xs items-center gap-1 rounded-full border border-border/60 bg-muted/30 p-1 shadow-sm">
+                      <button
+                        onClick={() => setActiveTab("overview")}
+                        className={cn(
+                          "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors",
+                          activeTab === "overview"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        Overview
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("components")}
+                        className={cn(
+                          "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors",
+                          activeTab === "components"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        Components
+                      </button>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 p-3">
+                    <p className="text-xs font-medium text-foreground">Key Features:</p>
+                    <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                      <li>• Pill-shaped container with subtle border and background</li>
+                      <li>• Active state: white/dark background with shadow</li>
+                      <li>• Inactive state: muted text with hover transition</li>
+                      <li>• Smooth color transitions (150-200ms)</li>
+                      <li>• Fully accessible with aria-current</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Color Palette */}
+            <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight">Color Palette</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Grayscale */}
@@ -138,10 +289,10 @@ export default function DesignTestPage() {
           </div>
         </section>
 
-        <Separator />
+            <Separator />
 
-        {/* Typography */}
-        <section>
+            {/* Typography */}
+            <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight">Typography</h2>
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Type Scale */}
@@ -237,10 +388,14 @@ export default function DesignTestPage() {
           </div>
         </section>
 
-        <Separator />
+            <Separator />
+          </>
+        )}
 
-        {/* Components */}
-        <section>
+        {activeTab === "components" && (
+          <>
+            {/* Components */}
+            <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight">Components</h2>
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Buttons */}
@@ -365,10 +520,10 @@ export default function DesignTestPage() {
           </div>
         </section>
 
-        <Separator />
+            <Separator />
 
-        {/* Animations */}
-        <section>
+            {/* Animations */}
+            <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight">Animations & Motion</h2>
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
@@ -437,10 +592,10 @@ export default function DesignTestPage() {
           </div>
         </section>
 
-        <Separator />
+            <Separator />
 
-        {/* Layout Patterns */}
-        <section>
+            {/* Layout Patterns */}
+            <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight">Layout Patterns</h2>
 
           {/* Market Snapshot Grid */}
@@ -533,10 +688,10 @@ export default function DesignTestPage() {
           </div>
         </section>
 
-        <Separator />
+            <Separator />
 
-        {/* Responsive Breakpoints */}
-        <section>
+            {/* Responsive Breakpoints */}
+            <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight">Responsive Breakpoints</h2>
           <Card>
             <CardContent className="p-4">
@@ -572,6 +727,8 @@ export default function DesignTestPage() {
             </CardContent>
           </Card>
         </section>
+          </>
+        )}
       </div>
     </div>
   );
