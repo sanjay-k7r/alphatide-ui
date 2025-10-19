@@ -38,7 +38,7 @@ export function transformTickerFromDB(row: TickerRow): Ticker {
     ticker: row.ticker,
     name: row.name,
     description: row.description,
-    is_public: row.is_public,
+    is_public: row.is_public ?? undefined,
     user_id: row.user_id,
     created_at: row.created_at,
   }

@@ -19,11 +19,13 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
+type TabType = "overview" | "components";
+
 export default function DesignTestPage() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [refreshCadence, setRefreshCadence] = useState("30s");
   const [alertsEnabled, setAlertsEnabled] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview" | "components">("overview");
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
   const { scheme, setScheme } = useColorScheme();
 
   const triggerAnimation = () => {
@@ -140,61 +142,61 @@ export default function DesignTestPage() {
           </Card>
         </section>
 
+        {/* Tab Button Example */}
+        <section>
+          <h2 className="mb-4 text-xl font-semibold tracking-tight">Tab Navigation</h2>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Pill-style Tab Buttons (per design-system.md)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Active tab: <span className="font-semibold text-foreground">{activeTab}</span>
+                </p>
+                <div className="flex w-full max-w-xs items-center gap-1 rounded-full border border-border/60 bg-muted/30 p-1 shadow-sm">
+                  <button
+                    onClick={() => setActiveTab("overview")}
+                    className={cn(
+                      "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors",
+                      activeTab === "overview"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Overview
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("components")}
+                    className={cn(
+                      "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors",
+                      activeTab === "components"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Components
+                  </button>
+                </div>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <p className="text-xs font-medium text-foreground">Key Features:</p>
+                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                  <li>• Pill-shaped container with subtle border and background</li>
+                  <li>• Active state: white/dark background with shadow</li>
+                  <li>• Inactive state: muted text with hover transition</li>
+                  <li>• Smooth color transitions (150-200ms)</li>
+                  <li>• Fully accessible with aria-current</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
         {activeTab === "overview" && (
           <>
-            {/* Tab Button Example */}
-            <section>
-              <h2 className="mb-4 text-xl font-semibold tracking-tight">Tab Navigation</h2>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                    Pill-style Tab Buttons (per design-system.md)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Active tab: <span className="font-semibold text-foreground">{activeTab}</span>
-                    </p>
-                    <div className="flex w-full max-w-xs items-center gap-1 rounded-full border border-border/60 bg-muted/30 p-1 shadow-sm">
-                      <button
-                        onClick={() => setActiveTab("overview")}
-                        className={cn(
-                          "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors",
-                          activeTab === "overview"
-                            ? "bg-background text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        Overview
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("components")}
-                        className={cn(
-                          "flex-1 rounded-full px-3 py-1.5 text-center text-xs font-medium transition-colors",
-                          activeTab === "components"
-                            ? "bg-background text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        Components
-                      </button>
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-border bg-muted/30 p-3">
-                    <p className="text-xs font-medium text-foreground">Key Features:</p>
-                    <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                      <li>• Pill-shaped container with subtle border and background</li>
-                      <li>• Active state: white/dark background with shadow</li>
-                      <li>• Inactive state: muted text with hover transition</li>
-                      <li>• Smooth color transitions (150-200ms)</li>
-                      <li>• Fully accessible with aria-current</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
-
             {/* Color Palette */}
             <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight">Color Palette</h2>
