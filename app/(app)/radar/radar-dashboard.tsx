@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { TickerSelect } from "@/features/tickers/components/TickerSelect"
 import { MomentumCard } from "@/features/radar/components/momentum-card"
+import { MarketOverviewBar } from "@/features/radar/components/market-overview-bar"
 import { type RadarCardState, type MomentumAnalysisResult } from "@/features/radar/types"
 import { useTickers } from "@/features/tickers/hooks/useTickers"
 
@@ -166,11 +167,12 @@ export function RadarDashboard() {
 
   return (
     <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-6 lg:px-8">
-      {/* Add Ticker Button */}
-      <div className="flex items-center justify-start">
+      {/* Market Overview Bar + Add Ticker Button */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+        <MarketOverviewBar />
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="shrink-0 self-start lg:self-auto">
               <Plus className="mr-2 size-4" />
               Add Ticker
             </Button>
