@@ -170,7 +170,7 @@ function ResultState({ result }: { result: MomentumAnalysisResult }) {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-            Summary
+            Momentum
           </h3>
           {formattedConfidence ? (
             <>
