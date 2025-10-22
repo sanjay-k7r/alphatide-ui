@@ -220,7 +220,7 @@ function ResultState({ result }: { result: MomentumAnalysisResult }) {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                Momentum Analysis
+                Analysis
               </h3>
               {formattedConfidence ? (
                 <>
@@ -252,7 +252,7 @@ function ResultState({ result }: { result: MomentumAnalysisResult }) {
               <p
                 className={cn(
                   "text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap transition-all duration-300 ease-in-out",
-                  !isMomentumExpanded && "line-clamp-5"
+                  !isMomentumExpanded && "line-clamp-2"
                 )}
               >
                 {result.analysis}
@@ -273,7 +273,7 @@ function ResultState({ result }: { result: MomentumAnalysisResult }) {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                Darkpool Analysis
+                Analysis
               </h3>
               {formattedDarkpoolConfidence ? (
                 <>
@@ -307,7 +307,7 @@ function ResultState({ result }: { result: MomentumAnalysisResult }) {
               <p
                 className={cn(
                   "text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap transition-all duration-300 ease-in-out",
-                  !isDarkpoolExpanded && "line-clamp-5"
+                  !isDarkpoolExpanded && "line-clamp-2"
                 )}
               >
                 {result.darkpool_analysis}
