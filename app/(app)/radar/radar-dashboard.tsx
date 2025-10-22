@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState, useRef, useEffect } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +22,9 @@ export function RadarDashboard() {
   const [selectionError, setSelectionError] = useState<string | null>(null)
   const [cards, setCards] = useState<RadarCardState[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [activeCardIndex, setActiveCardIndex] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   const tickerSymbols = useMemo(() => {
     return tickers.map((ticker) => ticker.ticker)
@@ -62,6 +65,18 @@ export function RadarDashboard() {
     setSelectedTicker("")
     setSelectionError(null)
     setDialogOpen(false)
+
+    // Scroll to the new card (first position) on mobile
+    setTimeout(() => {
+      const firstCardElement = cardRefs.current.get(newCard.id)
+      if (firstCardElement) {
+        firstCardElement.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        })
+      }
+    }, 100)
   }, [cards, selectedTicker, tickerSymbols])
 
   const handleRemoveCard = useCallback((card: RadarCardState) => {
@@ -117,6 +132,37 @@ export function RadarDashboard() {
     },
     []
   )
+
+  // Track active card using Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const cardId = entry.target.getAttribute("data-card-id")
+            if (cardId) {
+              const index = cards.findIndex((card) => card.id === cardId)
+              if (index !== -1) {
+                setActiveCardIndex(index)
+              }
+            }
+          }
+        })
+      },
+      {
+        root: carouselRef.current,
+        threshold: 0.5,
+      }
+    )
+
+    cardRefs.current.forEach((element) => {
+      observer.observe(element)
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [cards])
 
   return (
     <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-6 lg:px-8">
@@ -176,17 +222,77 @@ export function RadarDashboard() {
         {cards.length === 0 ? (
           <EmptyState onAddClick={() => setDialogOpen(true)} />
         ) : (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {cards.map((card) => (
-              <MomentumCard
-                key={card.id}
-                card={card}
-                onAnalyze={handleRunAnalysis}
-                onRefresh={handleRunAnalysis}
-                onRemove={handleRemoveCard}
-              />
-            ))}
-          </div>
+          <>
+            {/* Mobile: Horizontal scrolling carousel */}
+            <div className="lg:hidden space-y-4">
+              {/* Dot indicators */}
+              {cards.length > 1 && (
+                <div className="flex items-center justify-center gap-1.5">
+                  {cards.map((card, index) => (
+                    <button
+                      key={card.id}
+                      onClick={() => {
+                        const element = cardRefs.current.get(card.id)
+                        element?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "nearest",
+                          inline: "center",
+                        })
+                      }}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        index === activeCardIndex
+                          ? "w-6 bg-primary"
+                          : "w-1.5 bg-muted-foreground/30"
+                      }`}
+                      aria-label={`Go to ${card.ticker}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div className="-mx-4 px-4">
+                <div
+                  ref={carouselRef}
+                  className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
+                >
+                  {cards.map((card) => (
+                    <div
+                      key={card.id}
+                      ref={(el) => {
+                        if (el) {
+                          cardRefs.current.set(card.id, el)
+                        } else {
+                          cardRefs.current.delete(card.id)
+                        }
+                      }}
+                      data-card-id={card.id}
+                      className="min-w-[85vw] snap-center"
+                    >
+                      <MomentumCard
+                        card={card}
+                        onAnalyze={handleRunAnalysis}
+                        onRefresh={handleRunAnalysis}
+                        onRemove={handleRemoveCard}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop: Grid layout */}
+            <div className="hidden lg:grid grid-cols-1 gap-4 lg:grid-cols-2">
+              {cards.map((card) => (
+                <MomentumCard
+                  key={card.id}
+                  card={card}
+                  onAnalyze={handleRunAnalysis}
+                  onRefresh={handleRunAnalysis}
+                  onRemove={handleRemoveCard}
+                />
+              ))}
+            </div>
+          </>
         )}
       </section>
     </div>

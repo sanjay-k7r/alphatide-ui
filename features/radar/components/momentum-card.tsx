@@ -120,14 +120,14 @@ export function MomentumCard({
               <RotateCcw className="size-4" aria-hidden="true" />
               Refresh
             </Button>
-            <Button
+            {/* <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={handleAnalyzeInChat}
             >
               Analyze in Chat
-            </Button>
+            </Button> */}
           </>
         ) : null}
       </footer>
@@ -210,7 +210,7 @@ function ResultState({ result }: { result: MomentumAnalysisResult }) {
             <p
               className={cn(
                 "text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap transition-all duration-300 ease-in-out",
-                !isExpanded && "line-clamp-5"
+                !isExpanded && "line-clamp-15"
               )}
             >
               {result.analysis}
