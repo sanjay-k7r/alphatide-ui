@@ -1,325 +1,232 @@
-"use client";
+"use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChatKit, useChatKit } from "@openai/chatkit-react";
-import { Loader2, Play } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { TickerSelect } from "@/features/tickers/components/TickerSelect";
-import { useTickers } from "@/features/tickers/hooks/useTickers";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { MOMENTUM_WORKFLOW_ID } from "@/features/momentum/constants";
-import { CREATE_SESSION_ENDPOINT, getThemeConfig } from "@/lib/config";
-
-type RunState = "idle" | "running" | "ready" | "error";
-type SessionState = "idle" | "loading" | "ready" | "error";
+import { useCallback, useMemo, useState } from "react"
+import { RadarTickerSelector } from "@/features/radar/components/ticker-selector"
+import { MomentumCard } from "@/features/radar/components/momentum-card"
+import { type RadarCardState, type MomentumAnalysisResult } from "@/features/radar/types"
+import { useTickers } from "@/features/tickers/hooks/useTickers"
 
 export function RadarDashboard() {
-  const { tickers, loading, error, refresh } = useTickers();
-  const { scheme } = useColorScheme();
+  const { tickers, loading, error, refresh } = useTickers()
+  const [selectedTicker, setSelectedTicker] = useState("")
+  const [selectionError, setSelectionError] = useState<string | null>(null)
+  const [cards, setCards] = useState<RadarCardState[]>([])
 
-  const [selectedTicker, setSelectedTicker] = useState("");
-  const [runState, setRunState] = useState<RunState>("idle");
-  const [sessionState, setSessionState] = useState<SessionState>("idle");
-  const [sessionError, setSessionError] = useState<string | null>(null);
-  const [runError, setRunError] = useState<string | null>(null);
-  const [lastRunTicker, setLastRunTicker] = useState<string | null>(null);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
-  const [widgetKey, setWidgetKey] = useState(0);
+  const tickerSymbols = useMemo(() => {
+    return tickers.map((ticker) => ticker.ticker)
+  }, [tickers])
 
-  useEffect(() => {
-    setRunState("idle");
-    setRunError(null);
-    setLastRunTicker(null);
-    setLastUpdatedAt(null);
-  }, [selectedTicker]);
+  const handleTickerChange = useCallback((value: string) => {
+    setSelectedTicker(value)
+    setSelectionError(null)
+  }, [])
 
-  const themeConfig = useMemo(() => getThemeConfig(scheme), [scheme]);
+  const handleAddTicker = useCallback(() => {
+    if (!selectedTicker) {
+      setSelectionError("Select a ticker to add.")
+      return
+    }
 
-  const getClientSecret = useCallback(
-    async (currentSecret: string | null) => {
-      if (!MOMENTUM_WORKFLOW_ID) {
-        const message = "Momentum workflow ID is not configured.";
-        setSessionError(message);
-        setSessionState("error");
-        throw new Error(message);
-      }
+    const symbol = selectedTicker.trim().toUpperCase()
 
-      if (!currentSecret) {
-        setSessionState("loading");
-        setSessionError(null);
-      }
+    if (!tickerSymbols.includes(symbol)) {
+      setSelectionError("Ticker not found. Try another symbol.")
+      return
+    }
+
+    if (cards.some((card) => card.ticker === symbol)) {
+      setSelectionError(`${symbol} is already being tracked.`)
+      return
+    }
+
+    const newCard: RadarCardState = {
+      id: typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${symbol}-${Date.now()}`,
+      ticker: symbol,
+      status: "idle",
+      result: undefined,
+      error: null,
+    }
+
+    setCards((current) => [newCard, ...current])
+    setSelectedTicker("")
+    setSelectionError(null)
+  }, [cards, selectedTicker, tickerSymbols])
+
+  const handleRemoveCard = useCallback((card: RadarCardState) => {
+    setCards((current) => current.filter((item) => item.id !== card.id))
+  }, [])
+
+  const handleRunAnalysis = useCallback(
+    async (card: RadarCardState) => {
+      setCards((current) =>
+        current.map((item) =>
+          item.id === card.id
+            ? {
+                ...item,
+                status: "loading",
+                error: null,
+              }
+            : item
+        )
+      )
 
       try {
-        const response = await fetch(CREATE_SESSION_ENDPOINT, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            workflow: { id: MOMENTUM_WORKFLOW_ID },
-          }),
-        });
-
-        const json = (await response
-          .json()
-          .catch(() => ({}))) as { client_secret?: unknown; error?: unknown };
-
-        if (!response.ok) {
-          const message =
-            typeof json?.error === "string"
-              ? json.error
-              : "Failed to create ChatKit session.";
-          setSessionError(message);
-          setSessionState("error");
-          throw new Error(message);
-        }
-
-        const clientSecret =
-          typeof json?.client_secret === "string"
-            ? json.client_secret
-            : null;
-
-        if (!clientSecret) {
-          const message = "ChatKit session response missing client secret.";
-          setSessionError(message);
-          setSessionState("error");
-          throw new Error(message);
-        }
-
-        setSessionState("ready");
-        setSessionError(null);
-        return clientSecret;
+        const result = await analyzeMomentum(card.ticker)
+        setCards((current) =>
+          current.map((item) =>
+            item.id === card.id
+              ? {
+                  ...item,
+                  status: "ready",
+                  result,
+                  error: null,
+                }
+              : item
+          )
+        )
       } catch (caught) {
         const message =
           caught instanceof Error
             ? caught.message
-            : "Unable to create ChatKit session.";
-        setSessionError(message);
-        setSessionState("error");
-        throw caught;
+            : "Unable to analyze momentum right now."
+
+        setCards((current) =>
+          current.map((item) =>
+            item.id === card.id
+              ? {
+                  ...item,
+                  status: "error",
+                  error: message,
+                }
+              : item
+          )
+        )
       }
     },
     []
-  );
-
-  const chatkit = useChatKit({
-    api: { getClientSecret },
-    theme: themeConfig,
-    header: {
-      enabled: false,
-    },
-    history: {
-      enabled: false,
-    },
-    startScreen: {
-      greeting:
-        "The momentum agent will post its latest read right here. Use the run button above whenever you want a fresh take.",
-      prompts: [],
-    },
-    composer: {
-      placeholder: "Use the Run button above to trigger the agent.",
-      attachments: {
-        enabled: false,
-      },
-    },
-    threadItemActions: {
-      feedback: false,
-    },
-    disclaimer: {
-      text: "Momentum analysis is experimental. Double-check before trading.",
-      highContrast: false,
-    },
-    onResponseStart: () => {
-      setRunState("running");
-      setRunError(null);
-    },
-    onResponseEnd: () => {
-      setRunState("ready");
-      setLastUpdatedAt(new Date());
-    },
-    onError: ({ error: detail }: { error: unknown }) => {
-      const message =
-        detail instanceof Error
-          ? detail.message
-          : "ChatKit encountered an unexpected error.";
-      setSessionError(message);
-      setSessionState("error");
-      console.error("[MomentumAgent] ChatKit error", detail);
-    },
-  });
-
-  useEffect(() => {
-    const element = chatkit.ref.current;
-    if (!element) {
-      return;
-    }
-
-    element.setOptions({
-      ...chatkit.control.options,
-      theme: themeConfig,
-    });
-  }, [chatkit, themeConfig]);
-
-  const disabledReason = useMemo(() => {
-    if (!selectedTicker) {
-      return "Select a ticker to run the momentum agent.";
-    }
-    if (sessionState === "loading") {
-      return "Momentum agent session is still starting.";
-    }
-    if (sessionState === "error") {
-      return sessionError ?? "Momentum agent session failed to start.";
-    }
-    if (runState === "running") {
-      return "Momentum agent is already running.";
-    }
-    return null;
-  }, [selectedTicker, sessionError, sessionState, runState]);
-
-  const handleRetrySession = useCallback(() => {
-    setSessionError(null);
-    setSessionState("idle");
-    setWidgetKey((current) => current + 1);
-  }, []);
-
-  const handleRunMomentum = useCallback(async () => {
-    if (!selectedTicker || sessionState !== "ready" || !chatkit.ref.current) {
-      setRunError(
-        !selectedTicker
-          ? "Select a ticker first."
-          : sessionState === "ready"
-            ? "Momentum agent is not ready yet. Try again."
-            : sessionError ?? "Momentum agent session is not ready."
-      );
-      setRunState("error");
-      return;
-    }
-
-    try {
-      setRunState("running");
-      setRunError(null);
-      setLastRunTicker(selectedTicker);
-      setLastUpdatedAt(null);
-      await chatkit.setThreadId(null);
-      await chatkit.sendUserMessage({
-        text: `Analyze momentum for ${selectedTicker}.`,
-      });
-    } catch (caught) {
-      console.error("[RadarDashboard] Failed to send momentum request", caught);
-      setRunError("Unable to run the momentum agent. Try again.");
-      setRunState("error");
-    }
-  }, [chatkit, selectedTicker, sessionError, sessionState]);
-
-  const running = runState === "running";
+  )
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-8">
-      <section className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Radar</h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Start simple: choose a ticker and let the momentum agent stream its
-          take. We&apos;ll layer in more widgets after this path is solid.
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 md:px-6 lg:px-8">
+      <header className="space-y-3">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+          Radar
+        </h1>
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Build a quick stack of tickers and run momentum in seconds. Each card keeps the latest read — refresh for a new pulse or send it to chat for deeper work.
         </p>
-      </section>
+      </header>
 
       <section className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Ticker
-          </Label>
-          <TickerSelect
-            value={selectedTicker}
-            onValueChange={setSelectedTicker}
-            tickers={tickers}
-            loading={loading}
-            error={error}
-            onRefresh={refresh}
-            placeholder="Select a ticker…"
-          />
-          {error ? (
-            <p className="text-xs text-destructive">
-              Unable to load tickers. Refresh or add tickers from the questions
-              panel.
-            </p>
-          ) : null}
-        </div>
+        <RadarTickerSelector
+          value={selectedTicker}
+          onValueChange={handleTickerChange}
+          onSubmit={handleAddTicker}
+          selectionError={selectionError}
+          tickers={tickers}
+          loading={loading}
+          error={error}
+          onRefresh={refresh}
+        />
+        {error ? (
+          <p className="text-xs text-muted-foreground">
+            Unable to load tickers. Try refreshing or check back later.
+          </p>
+        ) : null}
+      </section>
 
-        <Card className="overflow-hidden border-border/60">
-          <CardHeader className="flex flex-col gap-4 border-b bg-muted/30 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-lg font-medium">
-                Momentum agent
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Press run to trigger the workflow. We pass the selected ticker
-                as the only variable so the agent stays focused.
-              </p>
-              {lastUpdatedAt && lastRunTicker ? (
-                <p className="text-xs text-muted-foreground/80">
-                  Last run for {lastRunTicker} at{" "}
-                  {lastUpdatedAt.toLocaleTimeString()}
-                </p>
-              ) : null}
-            </div>
-            <Button
-              onClick={handleRunMomentum}
-              disabled={Boolean(disabledReason)}
-              title={disabledReason ?? "Run momentum analysis"}
-              className="inline-flex items-center gap-2"
-            >
-              {running ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <Play className="size-4" aria-hidden="true" />
-              )}
-              {running ? "Running…" : "Run"}
-            </Button>
-          </CardHeader>
-          <CardContent className="relative space-y-4 p-0">
-            {sessionState === "loading" ? (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/80">
-                <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-                <p className="text-xs text-muted-foreground">
-                  Starting momentum agent session…
-                </p>
-              </div>
-            ) : null}
-
-            {sessionState === "error" && sessionError ? (
-              <div className="flex flex-col gap-3 p-6 text-sm text-destructive">
-                <div className="rounded-md border border-destructive/40 bg-destructive/10 p-4">
-                  {sessionError}
-                </div>
-                <div>
-                  <Button variant="outline" size="sm" onClick={handleRetrySession}>
-                    Retry session
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-
-            {runState === "error" && runError ? (
-              <div className="px-6 pt-6">
-                <div className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-                  {runError}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="relative h-[420px] w-full">
-              <ChatKit
-                key={widgetKey}
-                control={chatkit.control}
-                className="momentum-chatkit h-full w-full"
+      <section className="flex flex-col gap-4">
+        {cards.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {cards.map((card) => (
+              <MomentumCard
+                key={card.id}
+                card={card}
+                onAnalyze={handleRunAnalysis}
+                onRefresh={handleRunAnalysis}
+                onRemove={handleRemoveCard}
               />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent" />
-            </div>
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        )}
       </section>
     </div>
-  );
+  )
+}
+
+async function analyzeMomentum(ticker: string): Promise<MomentumAnalysisResult> {
+  const response = await fetch("/api/analyze-momentum", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ticker }),
+  })
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { error?: string; message?: string }
+      | null
+
+    const detail = payload?.error ?? payload?.message ?? "Momentum analysis failed."
+    throw new Error(detail)
+  }
+
+  const payload = (await response.json()) as MomentumAnalysisResult
+  const analysis =
+    typeof payload.analysis === "string" && payload.analysis.trim().length > 0
+      ? payload.analysis.trim()
+      : "No analysis available."
+  const reasoning =
+    typeof payload.reasoning === "string" && payload.reasoning.trim().length > 0
+      ? payload.reasoning.trim()
+      : "No reasoning supplied."
+
+  // Handle confidence - can be number or string ("low", "medium", "high")
+  let confidence: number | string = 0
+  if (typeof payload.confidence === "number") {
+    confidence = Math.max(0, Math.min(100, Math.round(payload.confidence)))
+  } else if (typeof payload.confidence === "string") {
+    const confStr = payload.confidence.toLowerCase().trim()
+    if (confStr === "low" || confStr === "medium" || confStr === "high") {
+      confidence = confStr
+    } else {
+      // Try to parse as number
+      const numConf = Number.parseFloat(payload.confidence)
+      confidence = Number.isFinite(numConf) ? Math.max(0, Math.min(100, Math.round(numConf))) : 0
+    }
+  }
+
+  const timestamp =
+    typeof payload.timestamp === "string" && payload.timestamp.length > 0
+      ? payload.timestamp
+      : new Date().toISOString()
+  const summary =
+    typeof payload.summary === "string" && payload.summary.trim().length > 0
+      ? payload.summary.trim()
+      : "No summary available."
+
+  return {
+    ticker: payload.ticker ?? ticker,
+    summary,
+    analysis,
+    reasoning,
+    confidence,
+    timestamp,
+  }
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/60 bg-muted/20 p-10 text-center">
+      <p className="text-sm text-muted-foreground">
+        Add a ticker to spin up your first momentum card.
+      </p>
+      <p className="text-xs text-muted-foreground/80">
+        No persistence yet — cards reset when you leave the page.
+      </p>
+    </div>
+  )
 }

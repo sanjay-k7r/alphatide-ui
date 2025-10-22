@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
   ChatKitPanel,
@@ -8,6 +8,10 @@ import {
   type FactAction,
 } from "@/components/ChatKitPanel";
 import { QuestionsPanel } from "@/features/questions/components/QuestionsPanel";
+import {
+  RADAR_CHAT_PREFILL_EVENT,
+  type RadarChatPrefillDetail,
+} from "@/features/radar/constants";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useAuth } from "@/providers/auth-provider";
 import { useQuestionsPanel } from "@/providers/questions-panel-provider";
@@ -49,6 +53,31 @@ export default function App() {
     },
     [closeMobilePanel, isMobileOpen]
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handlePrefill = (event: Event) => {
+      const detail = (event as CustomEvent<RadarChatPrefillDetail>).detail;
+      if (!detail?.prompt) {
+        return;
+      }
+      void handleQuestionInsert(detail.prompt);
+    };
+
+    window.addEventListener(
+      RADAR_CHAT_PREFILL_EVENT,
+      handlePrefill as EventListener
+    );
+    return () => {
+      window.removeEventListener(
+        RADAR_CHAT_PREFILL_EVENT,
+        handlePrefill as EventListener
+      );
+    };
+  }, [handleQuestionInsert]);
 
   return (
     <main className="flex min-h-screen flex-col bg-background">

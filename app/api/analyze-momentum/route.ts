@@ -9,15 +9,13 @@ type AnalyzeMomentumResponse = {
   summary: string;
   analysis: string;
   reasoning: string;
-  confidence: number;
+  confidence: number | string;
   timestamp: string;
 };
 
-// const MOMENTUM_PROMPT_ID =
-//   process.env.MOMENTUM_PROMPT_ID?.trim() ||
-//   "pmpt_68f7e2f0ad788197b73386002e126a35014f91b158069ddc"
+const MOMENTUM_PROMPT_ID = process.env.MOMENTUM_PROMPT_ID?.trim() || "";
 
-const MOMENTUM_PROMPT_ID = process.env.MOMENTUM_PROMPT?.trim() || "";
+// const MOMENTUM_PROMPT_ID = process.env.MOMENTUM_PROMPT?.trim() || "";
 
 const ALPHATIDE_MCP_URL = process.env.ALPHATIDE_MCP_URL?.trim() || null;
 const ALPHATIDE_MCP_KEY = process.env.ALPHATIDE_MCP_KEY?.trim() || null;
@@ -126,7 +124,7 @@ async function runMomentumPromptAnalysis(
   const body = {
     prompt: {
       id: MOMENTUM_PROMPT_ID,
-      version: "5",
+      version: "6",
     },
     input: [
       {
@@ -134,7 +132,7 @@ async function runMomentumPromptAnalysis(
         content: [
           {
             type: "input_text",
-            text: `Analyze momentum for ${ticker}. Respond with JSON containing analysis, reasoning, confidence (0-100), and timestamp.`,
+            text: `Analyze momentum for ${ticker}.`,
           },
         ],
       },
@@ -183,25 +181,59 @@ async function runMomentumPromptAnalysis(
   const json = (await response.json()) as unknown;
 
   const text = extractResponseText(json);
-
-  const payload = parseMomentumPayload(text);
+  const raw = text.trim();
 
   if (process.env.NODE_ENV !== "production") {
-    console.debug("[analyze-momentum] prompt text", text);
-    console.debug("[analyze-momentum] parsed payload", payload);
+    console.debug("[analyze-momentum] prompt raw output", raw);
   }
 
-  const analysis = sanitizeText(payload.analysis, "No analysis available.");
-  const reasoning = sanitizeText(payload.reasoning, "No reasoning provided.");
-  const summary = resolveSummary(payload.summary, analysis);
+  // Parse the JSON response from the prompt
+  let parsed: PromptPayload;
+  try {
+    parsed = JSON.parse(raw) as PromptPayload;
+    if (process.env.NODE_ENV !== "production") {
+      console.debug("[analyze-momentum] parsed successfully", parsed);
+    }
+  } catch (parseError) {
+    console.error("[analyze-momentum] failed to parse prompt output", parseError);
+    // Fallback to raw text if parsing fails
+    return {
+      ticker,
+      summary: raw || "No summary available.",
+      analysis: "Unable to parse momentum analysis.",
+      reasoning: "",
+      confidence: 0,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Extract fields from parsed JSON
+  const summary = typeof parsed.summary === "string" ? parsed.summary : "No summary available.";
+  const analysis = typeof parsed.analysis === "string" ? parsed.analysis : "No analysis available.";
+  const reasoning = typeof parsed.reasoning === "string" ? parsed.reasoning : "";
+
+  // Handle confidence - can be number or string ("low", "medium", "high")
+  let confidence: number | string = 0;
+  if (typeof parsed.confidence === "number") {
+    confidence = parsed.confidence;
+  } else if (typeof parsed.confidence === "string") {
+    const confStr = parsed.confidence.toLowerCase().trim();
+    if (confStr === "low" || confStr === "medium" || confStr === "high") {
+      confidence = confStr;
+    } else {
+      // Try to parse as number
+      const numConf = Number.parseFloat(parsed.confidence);
+      confidence = Number.isNaN(numConf) ? 0 : numConf;
+    }
+  }
 
   return {
     ticker,
     summary,
     analysis,
     reasoning,
-    confidence: normalizeConfidence(payload.confidence),
-    timestamp: payload.timestamp ?? new Date().toISOString(),
+    confidence,
+    timestamp: new Date().toISOString(),
   };
 }
 
@@ -283,30 +315,6 @@ type PromptPayload = {
   timestamp?: unknown;
 };
 
-function resolveSummary(summary: unknown, analysis: string): string {
-  const primary = sanitizeText(summary, "");
-  if (primary) {
-    return primary;
-  }
-
-  const derived = deriveSummaryFromAnalysis(analysis);
-  return derived ?? "No summary available.";
-}
-
-function deriveSummaryFromAnalysis(analysis: string): string | null {
-  if (!analysis || analysis === "No analysis available.") {
-    return null;
-  }
-
-  const firstSentenceMatch = analysis.match(/[^.!?]+[.!?]/);
-  if (firstSentenceMatch?.[0]) {
-    return firstSentenceMatch[0].trim();
-  }
-
-  const firstLine = analysis.split("\n").find((line) => line.trim().length > 0);
-  return firstLine ? firstLine.trim() : null;
-}
-
 function extractResponseText(response: unknown): string {
   if (
     response &&
@@ -350,28 +358,6 @@ function extractResponseText(response: unknown): string {
   throw new Error("Momentum prompt returned empty output.");
 }
 
-function parseMomentumPayload(text: string): PromptPayload {
-  const cleaned = stripCodeFence(text);
-  try {
-    const parsed = JSON.parse(cleaned) as PromptPayload;
-    return parsed;
-  } catch (error) {
-    console.error("[analyze-momentum] failed to parse prompt output", {
-      text: cleaned,
-      error,
-    });
-    throw new Error("Momentum prompt returned invalid JSON.");
-  }
-}
-
-function stripCodeFence(text: string): string {
-  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (fenceMatch?.[1]) {
-    return fenceMatch[1].trim();
-  }
-  return text.trim();
-}
-
 async function safeParseJson<T>(request: Request): Promise<T | null> {
   try {
     return (await request.json()) as T;
@@ -390,23 +376,4 @@ function normalizeTicker(value?: string | null): string | null {
     return null;
   }
   return upper;
-}
-
-function sanitizeText(value: unknown, fallback: string): string {
-  if (typeof value !== "string") {
-    return fallback;
-  }
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : fallback;
-}
-
-function normalizeConfidence(value: unknown): number {
-  const numeric =
-    typeof value === "number"
-      ? value
-      : Number.parseFloat(typeof value === "string" ? value : "0");
-  if (!Number.isFinite(numeric)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(100, Math.round(numeric)));
 }
