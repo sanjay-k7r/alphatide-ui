@@ -1,7 +1,17 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { RadarTickerSelector } from "@/features/radar/components/ticker-selector"
+import { Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { TickerSelect } from "@/features/tickers/components/TickerSelect"
 import { MomentumCard } from "@/features/radar/components/momentum-card"
 import { type RadarCardState, type MomentumAnalysisResult } from "@/features/radar/types"
 import { useTickers } from "@/features/tickers/hooks/useTickers"
@@ -11,6 +21,7 @@ export function RadarDashboard() {
   const [selectedTicker, setSelectedTicker] = useState("")
   const [selectionError, setSelectionError] = useState<string | null>(null)
   const [cards, setCards] = useState<RadarCardState[]>([])
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const tickerSymbols = useMemo(() => {
     return tickers.map((ticker) => ticker.ticker)
@@ -50,6 +61,7 @@ export function RadarDashboard() {
     setCards((current) => [newCard, ...current])
     setSelectedTicker("")
     setSelectionError(null)
+    setDialogOpen(false)
   }, [cards, selectedTicker, tickerSymbols])
 
   const handleRemoveCard = useCallback((card: RadarCardState) => {
@@ -107,37 +119,62 @@ export function RadarDashboard() {
   )
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 md:px-6 lg:px-8">
-      <header className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-          Radar
-        </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Build a quick stack of tickers and run momentum in seconds. Each card keeps the latest read — refresh for a new pulse or send it to chat for deeper work.
-        </p>
-      </header>
+    <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-6 lg:px-8">
+      {/* Floating Add Button */}
+      <div className="flex items-center justify-end">
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="icon" className="size-10 rounded-full shadow-lg">
+              <Plus className="size-5" />
+              <span className="sr-only">Add ticker</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add Ticker</DialogTitle>
+              <DialogDescription>
+                Select a ticker to track its momentum analysis.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <TickerSelect
+                  value={selectedTicker}
+                  onValueChange={handleTickerChange}
+                  tickers={tickers}
+                  loading={loading}
+                  error={error}
+                  onRefresh={refresh}
+                  placeholder="Select ticker…"
+                />
+                {selectionError && (
+                  <p className="text-sm text-destructive">{selectionError}</p>
+                )}
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setDialogOpen(false)
+                    setSelectedTicker("")
+                    setSelectionError(null)
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleAddTicker} disabled={!selectedTicker}>
+                  Add Ticker
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-      <section className="space-y-4">
-        <RadarTickerSelector
-          value={selectedTicker}
-          onValueChange={handleTickerChange}
-          onSubmit={handleAddTicker}
-          selectionError={selectionError}
-          tickers={tickers}
-          loading={loading}
-          error={error}
-          onRefresh={refresh}
-        />
-        {error ? (
-          <p className="text-xs text-muted-foreground">
-            Unable to load tickers. Try refreshing or check back later.
-          </p>
-        ) : null}
-      </section>
-
+      {/* Cards Section */}
       <section className="flex flex-col gap-4">
         {cards.length === 0 ? (
-          <EmptyState />
+          <EmptyState onAddClick={() => setDialogOpen(true)} />
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {cards.map((card) => (
@@ -218,15 +255,26 @@ async function analyzeMomentum(ticker: string): Promise<MomentumAnalysisResult> 
   }
 }
 
-function EmptyState() {
+function EmptyState({ onAddClick }: { onAddClick: () => void }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/60 bg-muted/20 p-10 text-center">
-      <p className="text-sm text-muted-foreground">
-        Add a ticker to spin up your first momentum card.
-      </p>
-      <p className="text-xs text-muted-foreground/80">
-        No persistence yet — cards reset when you leave the page.
-      </p>
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border/60 bg-muted/20 p-16 text-center">
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          No tickers added yet
+        </p>
+        <p className="text-xs text-muted-foreground/70">
+          Click the + button to add your first ticker and track momentum
+        </p>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onAddClick}
+        className="mt-2"
+      >
+        <Plus className="mr-2 size-4" />
+        Add Ticker
+      </Button>
     </div>
   )
 }
