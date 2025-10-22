@@ -120,13 +120,13 @@ export function RadarDashboard() {
 
   return (
     <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-6 lg:px-8">
-      {/* Floating Add Button */}
-      <div className="flex items-center justify-end">
+      {/* Add Ticker Button */}
+      <div className="flex items-center justify-start">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="icon" className="size-10 rounded-full shadow-lg">
-              <Plus className="size-5" />
-              <span className="sr-only">Add ticker</span>
+            <Button variant="outline" size="sm">
+              <Plus className="mr-2 size-4" />
+              Add Ticker
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">

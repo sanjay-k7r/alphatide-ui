@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -163,6 +163,7 @@ function LoadingState() {
 function ResultState({ result }: { result: MomentumAnalysisResult }) {
   const formattedConfidence = formatConfidence(result.confidence);
   const confidenceTone = useConfidenceTone(result.confidence);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -205,10 +206,22 @@ function ResultState({ result }: { result: MomentumAnalysisResult }) {
           <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             Analysis
           </h3>
-          <div className="rounded-md border border-border/70 bg-card/60 px-4 py-3 shadow-sm">
-            <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+          <div className="relative">
+            <p
+              className={cn(
+                "text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap transition-all duration-300 ease-in-out",
+                !isExpanded && "line-clamp-5"
+              )}
+            >
               {result.analysis}
             </p>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-2 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              {isExpanded ? "...show less" : "...more"}
+            </button>
           </div>
         </div>
       ) : null}
