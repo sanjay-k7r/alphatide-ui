@@ -11,6 +11,9 @@ type AnalyzeMomentumResponse = {
   reasoning: string;
   confidence: number | string;
   timestamp: string;
+  darkpool_summary?: string;
+  darkpool_analysis?: string;
+  darkpool_confidence?: number | string;
 };
 
 const MOMENTUM_PROMPT_ID = process.env.MOMENTUM_PROMPT_ID?.trim() || "";
@@ -124,7 +127,7 @@ async function runMomentumPromptAnalysis(
   const body = {
     prompt: {
       id: MOMENTUM_PROMPT_ID,
-      version: "6",
+      version: "",
     },
     input: [
       {
@@ -195,7 +198,10 @@ async function runMomentumPromptAnalysis(
       console.debug("[analyze-momentum] parsed successfully", parsed);
     }
   } catch (parseError) {
-    console.error("[analyze-momentum] failed to parse prompt output", parseError);
+    console.error(
+      "[analyze-momentum] failed to parse prompt output",
+      parseError
+    );
     // Fallback to raw text if parsing fails
     return {
       ticker,
@@ -208,9 +214,16 @@ async function runMomentumPromptAnalysis(
   }
 
   // Extract fields from parsed JSON
-  const summary = typeof parsed.summary === "string" ? parsed.summary : "No summary available.";
-  const analysis = typeof parsed.analysis === "string" ? parsed.analysis : "No analysis available.";
-  const reasoning = typeof parsed.reasoning === "string" ? parsed.reasoning : "";
+  const summary =
+    typeof parsed.summary === "string"
+      ? parsed.summary
+      : "No summary available.";
+  const analysis =
+    typeof parsed.analysis === "string"
+      ? parsed.analysis
+      : "No analysis available.";
+  const reasoning =
+    typeof parsed.reasoning === "string" ? parsed.reasoning : "";
 
   // Handle confidence - can be number or string ("low", "medium", "high")
   let confidence: number | string = 0;
@@ -227,6 +240,31 @@ async function runMomentumPromptAnalysis(
     }
   }
 
+  // Extract darkpool fields
+  const darkpool_summary =
+    typeof parsed.darkpool_summary === "string"
+      ? parsed.darkpool_summary
+      : undefined;
+  const darkpool_analysis =
+    typeof parsed.darkpool_analysis === "string"
+      ? parsed.darkpool_analysis
+      : undefined;
+
+  // Handle darkpool confidence
+  let darkpool_confidence: number | string | undefined = undefined;
+  if (typeof parsed.darkpool_confidence === "number") {
+    darkpool_confidence = parsed.darkpool_confidence;
+  } else if (typeof parsed.darkpool_confidence === "string") {
+    const confStr = parsed.darkpool_confidence.toLowerCase().trim();
+    if (confStr === "low" || confStr === "medium" || confStr === "high") {
+      darkpool_confidence = confStr;
+    } else {
+      // Try to parse as number
+      const numConf = Number.parseFloat(parsed.darkpool_confidence);
+      darkpool_confidence = Number.isNaN(numConf) ? undefined : numConf;
+    }
+  }
+
   return {
     ticker,
     summary,
@@ -234,6 +272,9 @@ async function runMomentumPromptAnalysis(
     reasoning,
     confidence,
     timestamp: new Date().toISOString(),
+    darkpool_summary,
+    darkpool_analysis,
+    darkpool_confidence,
   };
 }
 
@@ -313,6 +354,9 @@ type PromptPayload = {
   reasoning?: unknown;
   confidence?: unknown;
   timestamp?: unknown;
+  darkpool_summary?: unknown;
+  darkpool_analysis?: unknown;
+  darkpool_confidence?: unknown;
 };
 
 function extractResponseText(response: unknown): string {

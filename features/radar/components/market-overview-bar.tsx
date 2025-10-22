@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import { RefreshCw, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -57,10 +57,24 @@ export function MarketOverviewBar() {
     fetchData(true)
   }, [fetchData])
 
-  // Initial fetch on mount
-  useEffect(() => {
-    fetchData()
+  const handleLoad = useCallback(() => {
+    fetchData(false)
   }, [fetchData])
+
+  if (status === "idle") {
+    return (
+      <div className="flex h-[70px] items-center justify-center rounded-md border border-border/40 bg-card/50 px-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleLoad}
+        >
+          <RefreshCw className="mr-2 size-3" aria-hidden="true" />
+          Load Market Data
+        </Button>
+      </div>
+    )
+  }
 
   if (status === "loading") {
     return (
@@ -110,24 +124,32 @@ export function MarketOverviewBar() {
         <SentimentCard sentiment={data.sentiment} />
       </div>
 
-      {/* Mobile: 3 metric cards + icon button */}
-      <div className="flex items-center gap-1.5 lg:hidden">
-        {data.metrics.slice(0, 3).map((metric) => (
-          <MarketMetricCard key={metric.ticker} metric={metric} />
-        ))}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="shrink-0"
-          aria-label="Refresh market data"
-        >
-          <RefreshCw
-            className={cn("size-4", isRefreshing && "animate-spin")}
-            aria-hidden="true"
-          />
-        </Button>
+      {/* Mobile: Two rows */}
+      <div className="flex flex-col gap-2 lg:hidden">
+        {/* Row 1: 3 metric cards + refresh button */}
+        <div className="flex items-center gap-1.5">
+          {data.metrics.slice(0, 3).map((metric) => (
+            <MarketMetricCard key={metric.ticker} metric={metric} />
+          ))}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="shrink-0"
+            aria-label="Refresh market data"
+          >
+            <RefreshCw
+              className={cn("size-4", isRefreshing && "animate-spin")}
+              aria-hidden="true"
+            />
+          </Button>
+        </div>
+
+        {/* Row 2: Sentiment card */}
+        <div className="flex">
+          <SentimentCard sentiment={data.sentiment} />
+        </div>
       </div>
 
       {/* Desktop: Refresh button */}

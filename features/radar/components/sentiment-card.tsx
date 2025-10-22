@@ -28,11 +28,11 @@ export function SentimentCard({ sentiment }: SentimentCardProps) {
     <div className="flex min-w-0 flex-col gap-1 rounded-md border border-border/40 bg-card/50 px-3 py-2 transition-colors hover:border-border/60">
       <div className="flex items-center gap-1.5">
         <div className={cn("size-2 rounded-full", dotColor)} aria-hidden="true" />
-        <div className={cn("text-xs font-medium", sentimentColor)}>
+        <div className={cn("text-[10px] font-medium uppercase tracking-wide", sentimentColor)}>
           {label}
         </div>
       </div>
-      <div className="text-xs text-muted-foreground line-clamp-2" title={description}>
+      <div className="text-sm leading-relaxed text-muted-foreground line-clamp-2" title={description}>
         {description}
       </div>
     </div>

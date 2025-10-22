@@ -66,7 +66,7 @@ export function MomentumCard({
   };
 
   return (
-    <Card className="relative flex w-full max-w-2xl flex-col overflow-hidden border border-border bg-card shadow-sm">
+    <Card className="relative flex w-full flex-col overflow-hidden border border-border bg-card shadow-sm">
       <header className="flex items-start justify-between gap-3 border-b border-border/60 px-5 pb-3 pt-4">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
@@ -163,68 +163,166 @@ function LoadingState() {
 function ResultState({ result }: { result: MomentumAnalysisResult }) {
   const formattedConfidence = formatConfidence(result.confidence);
   const confidenceTone = useConfidenceTone(result.confidence);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const formattedDarkpoolConfidence = formatConfidence(
+    result.darkpool_confidence
+  );
+  const darkpoolConfidenceTone = useConfidenceTone(result.darkpool_confidence);
+  const [isMomentumExpanded, setIsMomentumExpanded] = useState(false);
+  const [isDarkpoolExpanded, setIsDarkpoolExpanded] = useState(false);
+
+  const hasDarkpoolData = Boolean(
+    result.darkpool_summary || result.darkpool_analysis
+  );
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
+      {/* Summary Row - Horizontal Layout */}
+      <div
+        className={cn(
+          "grid gap-4",
+          hasDarkpoolData ? "grid-cols-2" : "grid-cols-1"
+        )}
+      >
+        {/* Momentum Summary */}
+        <div className="space-y-2">
           <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             Momentum
           </h3>
-          {formattedConfidence ? (
-            <>
-              <span className="text-muted-foreground/40">|</span>
-              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
-                Confidence
-              </span>
-              <span
-                className={cn(
-                  "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                  confidenceTone === "text-green-600 dark:text-green-500" &&
-                    "bg-green-500/10 text-green-700 dark:bg-green-500/15 dark:text-green-400",
-                  confidenceTone === "text-yellow-600 dark:text-yellow-500" &&
-                    "bg-yellow-500/10 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-400",
-                  confidenceTone === "text-orange-600 dark:text-orange-500" &&
-                    "bg-orange-500/10 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
-                  confidenceTone === "text-red-600 dark:text-red-500" &&
-                    "bg-red-500/10 text-red-700 dark:bg-red-500/15 dark:text-red-400"
-                )}
-              >
-                {formattedConfidence}
-              </span>
-            </>
-          ) : null}
+          <p className="text-[15px] leading-relaxed text-foreground">
+            {result.summary}
+          </p>
         </div>
-        <p className="text-[15px] leading-relaxed text-foreground">
-          {result.summary}
-        </p>
+
+        {/* Darkpool Summary */}
+        {hasDarkpoolData && result.darkpool_summary ? (
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              Darkpool
+            </h3>
+            <p className="text-[15px] leading-relaxed text-foreground">
+              {result.darkpool_summary}
+            </p>
+          </div>
+        ) : null}
       </div>
 
-      {result.analysis ? (
-        <div className="space-y-2">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-            Analysis
-          </h3>
-          <div className="relative">
-            <p
-              className={cn(
-                "text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap transition-all duration-300 ease-in-out",
-                !isExpanded && "line-clamp-15"
-              )}
-            >
-              {result.analysis}
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-2 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              {isExpanded ? "...show less" : "...more"}
-            </button>
+      {/* Analysis Row - Horizontal Layout */}
+      <div
+        className={cn(
+          "grid gap-4",
+          hasDarkpoolData && result.darkpool_analysis
+            ? "grid-cols-2"
+            : "grid-cols-1"
+        )}
+      >
+        {/* Momentum Analysis */}
+        {result.analysis ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Momentum Analysis
+              </h3>
+              {formattedConfidence ? (
+                <>
+                  <span className="text-muted-foreground/40">|</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
+                    Confidence
+                  </span>
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                      confidenceTone === "text-green-600 dark:text-green-500" &&
+                        "bg-green-500/10 text-green-700 dark:bg-green-500/15 dark:text-green-400",
+                      confidenceTone ===
+                        "text-yellow-600 dark:text-yellow-500" &&
+                        "bg-yellow-500/10 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-400",
+                      confidenceTone ===
+                        "text-orange-600 dark:text-orange-500" &&
+                        "bg-orange-500/10 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
+                      confidenceTone === "text-red-600 dark:text-red-500" &&
+                        "bg-red-500/10 text-red-700 dark:bg-red-500/15 dark:text-red-400"
+                    )}
+                  >
+                    {formattedConfidence}
+                  </span>
+                </>
+              ) : null}
+            </div>
+            <div className="relative">
+              <p
+                className={cn(
+                  "text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap transition-all duration-300 ease-in-out",
+                  !isMomentumExpanded && "line-clamp-5"
+                )}
+              >
+                {result.analysis}
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsMomentumExpanded(!isMomentumExpanded)}
+                className="mt-2 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                {isMomentumExpanded ? "...show less" : "...more"}
+              </button>
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
+
+        {/* Darkpool Analysis */}
+        {hasDarkpoolData && result.darkpool_analysis ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Darkpool Analysis
+              </h3>
+              {formattedDarkpoolConfidence ? (
+                <>
+                  <span className="text-muted-foreground/40">|</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
+                    Confidence
+                  </span>
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                      darkpoolConfidenceTone ===
+                        "text-green-600 dark:text-green-500" &&
+                        "bg-green-500/10 text-green-700 dark:bg-green-500/15 dark:text-green-400",
+                      darkpoolConfidenceTone ===
+                        "text-yellow-600 dark:text-yellow-500" &&
+                        "bg-yellow-500/10 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-400",
+                      darkpoolConfidenceTone ===
+                        "text-orange-600 dark:text-orange-500" &&
+                        "bg-orange-500/10 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
+                      darkpoolConfidenceTone ===
+                        "text-red-600 dark:text-red-500" &&
+                        "bg-red-500/10 text-red-700 dark:bg-red-500/15 dark:text-red-400"
+                    )}
+                  >
+                    {formattedDarkpoolConfidence}
+                  </span>
+                </>
+              ) : null}
+            </div>
+            <div className="relative">
+              <p
+                className={cn(
+                  "text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap transition-all duration-300 ease-in-out",
+                  !isDarkpoolExpanded && "line-clamp-5"
+                )}
+              >
+                {result.darkpool_analysis}
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsDarkpoolExpanded(!isDarkpoolExpanded)}
+                className="mt-2 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                {isDarkpoolExpanded ? "...show less" : "...more"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

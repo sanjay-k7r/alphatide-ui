@@ -7,6 +7,9 @@ export interface MomentumAnalysisResult {
   reasoning: string
   confidence: number | string
   timestamp: string
+  darkpool_summary?: string
+  darkpool_analysis?: string
+  darkpool_confidence?: number | string
 }
 
 export interface RadarCardState {
