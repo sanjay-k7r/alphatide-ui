@@ -2,10 +2,17 @@
 
 import { useEffect, type ReactNode } from "react"
 import { usePathname, useRouter, useSelectedLayoutSegment } from "next/navigation"
-import { Navbar } from "@/components/navbar"
+import { MessageCircle } from "lucide-react"
+
+import { LeftSidebar } from "@/components/left-sidebar"
+import { Button } from "@/components/ui/button"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 import { TAB_STORAGE_KEY } from "@/lib/navigation"
-import { useAuth } from "@/providers/auth-provider"
-import { QuestionsPanelProvider } from "@/providers/questions-panel-provider"
+import { QuestionsPanelProvider, useQuestionsPanel } from "@/providers/questions-panel-provider"
 import App from "../App"
 import { RadarDashboard } from "./radar/radar-dashboard"
 
@@ -14,8 +21,6 @@ export default function AppLayout({
 }: {
   children: ReactNode
 }) {
-  const { user } = useAuth()
-  const userEmail = user?.email ?? undefined
   const router = useRouter()
   const pathname = usePathname()
   const segment = useSelectedLayoutSegment()
@@ -36,23 +41,77 @@ export default function AppLayout({
   }, [pathname, router])
 
   const isRadarActive = segment === "radar"
+  const isSettingsActive = segment === "settings"
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+    window.localStorage.setItem(TAB_STORAGE_KEY, isRadarActive ? "radar" : "chat")
+  }, [isRadarActive])
 
   return (
     <QuestionsPanelProvider>
-      <div className="flex min-h-screen flex-col">
-        <Navbar userEmail={userEmail} />
-        <main className="flex-1">
-          <div className={isRadarActive ? "hidden" : "block"} aria-hidden={isRadarActive}>
-            <App />
-          </div>
-          <div className={isRadarActive ? "block" : "hidden"} aria-hidden={!isRadarActive}>
-            <RadarDashboard />
-          </div>
-          <div className="hidden" aria-hidden>
+      <SidebarProvider className="min-h-screen">
+        <LeftSidebar />
+        <SidebarInset>
+          <AppLayoutContent isRadarActive={isRadarActive} isSettingsActive={isSettingsActive}>
             {children}
-          </div>
-        </main>
-      </div>
+          </AppLayoutContent>
+        </SidebarInset>
+      </SidebarProvider>
     </QuestionsPanelProvider>
+  )
+}
+
+function AppLayoutContent({
+  children,
+  isRadarActive,
+  isSettingsActive,
+}: {
+  children: ReactNode
+  isRadarActive: boolean
+  isSettingsActive: boolean
+}) {
+  const { openMobilePanel } = useQuestionsPanel()
+  const showDefaultViews = !isSettingsActive
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="flex items-center gap-2">
+          <SidebarTrigger className="-ml-1" />
+          {showDefaultViews && (
+            <span className="text-sm font-semibold md:hidden">Alphatide</span>
+          )}
+        </div>
+        {showDefaultViews && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Browse questions"
+            onClick={openMobilePanel}
+            className="md:hidden"
+          >
+            <MessageCircle className="size-5" />
+          </Button>
+        )}
+      </header>
+      <main className="flex-1">
+        {showDefaultViews ? (
+          <>
+            <div className={isRadarActive ? "hidden" : "block"} aria-hidden={isRadarActive}>
+              <App />
+            </div>
+            <div className={isRadarActive ? "block" : "hidden"} aria-hidden={!isRadarActive}>
+              <RadarDashboard />
+            </div>
+          </>
+        ) : (
+          <div>{children}</div>
+        )}
+      </main>
+    </div>
   )
 }
