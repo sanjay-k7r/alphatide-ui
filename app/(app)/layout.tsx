@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import { TAB_STORAGE_KEY } from "@/lib/navigation"
 import { QuestionsPanelProvider, useQuestionsPanel } from "@/providers/questions-panel-provider"
+import { N8nChatProvider } from "@/providers/n8n-chat-provider"
 import App from "../App"
 import { RadarDashboard } from "./radar/radar-dashboard"
 
@@ -41,25 +42,29 @@ export default function AppLayout({
   }, [pathname, router])
 
   const isRadarActive = segment === "radar"
+  const isN8nChatActive = segment === "n8n-chat"
   const isSettingsActive = segment === "settings"
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return
     }
-    window.localStorage.setItem(TAB_STORAGE_KEY, isRadarActive ? "radar" : "chat")
-  }, [isRadarActive])
+    const tab = isRadarActive ? "radar" : isN8nChatActive ? "n8n-chat" : "chat"
+    window.localStorage.setItem(TAB_STORAGE_KEY, tab)
+  }, [isRadarActive, isN8nChatActive])
 
   return (
     <QuestionsPanelProvider>
-      <SidebarProvider className="min-h-screen">
-        <LeftSidebar />
-        <SidebarInset>
-          <AppLayoutContent isRadarActive={isRadarActive} isSettingsActive={isSettingsActive}>
-            {children}
-          </AppLayoutContent>
-        </SidebarInset>
-      </SidebarProvider>
+      <N8nChatProvider>
+        <SidebarProvider className="min-h-screen">
+          <LeftSidebar />
+          <SidebarInset>
+            <AppLayoutContent isRadarActive={isRadarActive} isN8nChatActive={isN8nChatActive} isSettingsActive={isSettingsActive}>
+              {children}
+            </AppLayoutContent>
+          </SidebarInset>
+        </SidebarProvider>
+      </N8nChatProvider>
     </QuestionsPanelProvider>
   )
 }
@@ -67,10 +72,12 @@ export default function AppLayout({
 function AppLayoutContent({
   children,
   isRadarActive,
+  isN8nChatActive,
   isSettingsActive,
 }: {
   children: ReactNode
   isRadarActive: boolean
+  isN8nChatActive: boolean
   isSettingsActive: boolean
 }) {
   const { openMobilePanel } = useQuestionsPanel()
@@ -101,11 +108,14 @@ function AppLayoutContent({
       <main className="flex-1">
         {showDefaultViews ? (
           <>
-            <div className={isRadarActive ? "hidden" : "block"} aria-hidden={isRadarActive}>
+            <div className={!isRadarActive && !isN8nChatActive ? "block" : "hidden"} aria-hidden={isRadarActive || isN8nChatActive}>
               <App />
             </div>
             <div className={isRadarActive ? "block" : "hidden"} aria-hidden={!isRadarActive}>
               <RadarDashboard />
+            </div>
+            <div className={isN8nChatActive ? "block" : "hidden"} aria-hidden={!isN8nChatActive}>
+              {children}
             </div>
           </>
         ) : (

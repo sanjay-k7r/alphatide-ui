@@ -4,6 +4,7 @@ import type { ComponentProps } from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import {
+  Bot,
   MessageCircle,
   MoreVertical,
   Radar,
@@ -42,7 +43,7 @@ import {
 } from "@/components/ui/sidebar"
 
 type NavItem = {
-  id: "chat" | "radar"
+  id: "chat" | "radar" | "n8n-chat"
   label: string
   href: string
   icon: LucideIcon
@@ -60,6 +61,12 @@ const NAV_ITEMS: NavItem[] = [
     label: "Radar",
     href: "/radar",
     icon: Radar,
+  },
+  {
+    id: "n8n-chat",
+    label: "N8N Chat",
+    href: "/n8n-chat",
+    icon: Bot,
   },
 ]
 
@@ -90,7 +97,11 @@ export function LeftSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
     return "US"
   }, [user?.user_metadata, userEmail])
 
-  const activeTab = pathname?.startsWith("/radar") ? "radar" : "chat"
+  const activeTab = pathname?.startsWith("/radar")
+    ? "radar"
+    : pathname?.startsWith("/n8n-chat")
+    ? "n8n-chat"
+    : "chat"
   const onSettingsRoute = pathname?.startsWith("/settings") ?? false
 
   useEffect(() => {
