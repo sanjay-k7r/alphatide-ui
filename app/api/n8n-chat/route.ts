@@ -22,14 +22,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Make request to n8n webhook using GET with JSON body
-    // This matches the working curl command format
+    // Make request to n8n webhook using POST with JSON body
     console.log('[N8N API] Sending to n8n webhook...');
-
     console.log('[N8N API] Webhook URL:', webhookUrl);
 
     const response = await fetch(webhookUrl, {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
