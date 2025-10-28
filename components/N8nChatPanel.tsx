@@ -91,18 +91,64 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      // Get the JSON response
-      const data = await response.json();
-      const content = data.output || data.message || "No response";
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-      // Update the assistant message with the full content
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === assistantMessageId
-            ? { ...msg, content, isStreaming: false }
-            : msg
-        )
-      );
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      let accumulatedContent = '';
+
+      console.log('[N8N Chat] Starting to read stream...');
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          console.log('[N8N Chat] Stream complete');
+          // Mark streaming as complete
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, isStreaming: false }
+                : msg
+            )
+          );
+          break;
+        }
+
+        const chunk = decoder.decode(value, { stream: true });
+        console.log('[N8N Chat] Received chunk:', chunk.length, 'bytes at', new Date().toISOString());
+        console.log('[N8N Chat] Chunk content:', chunk);
+
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              console.log('[N8N Chat] Parsed data:', data);
+              if (data.content) {
+                accumulatedContent += data.content;
+                console.log('[N8N Chat] Accumulated content so far:', accumulatedContent);
+
+                // Update the assistant message with streaming content
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantMessageId
+                      ? { ...msg, content: accumulatedContent, isStreaming: true }
+                      : msg
+                  )
+                );
+              }
+            } catch (e) {
+              console.warn('[N8N Chat] Failed to parse SSE data:', line);
+            }
+          }
+        }
+      }
 
     } catch (error) {
       console.error("N8N chat error:", error);

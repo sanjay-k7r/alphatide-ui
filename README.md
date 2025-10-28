@@ -70,7 +70,7 @@ Before deploying your app, you need to verify the domain by adding it to the [Do
 - [ChatKit JavaScript Library](http://openai.github.io/chatkit-js/)
 - [Advanced Self-Hosting Examples](https://github.com/openai/openai-chatkit-advanced-samples)
 
-curl -X GET \
+curl -X POST \
  -H "Content-Type: application/json" \
  -d '{ "chatInput": "Hello n8n!" }' \
  https://n8n-latest-8nkc.onrender.com/webhook-test/c7966265-2425-43fa-9607-14978e21f91e

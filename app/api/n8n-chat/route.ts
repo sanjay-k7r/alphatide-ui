@@ -46,48 +46,72 @@ export async function POST(request: NextRequest) {
       throw new Error(`N8N webhook returned ${response.status}: ${errorText}`);
     }
 
-    // n8n returns a streaming response with newline-delimited JSON
-    // We need to parse the stream and combine the content
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
+    // Stream the response back to the client
+    // n8n sends newline-delimited JSON, we'll forward it as text/event-stream
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        const encoder = new TextEncoder();
 
-    if (!reader) {
-      throw new Error('No response body');
-    }
-
-    let fullContent = '';
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-
-      // Split by newlines to process complete JSON objects
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || ''; // Keep incomplete line in buffer
-
-      for (const line of lines) {
-        if (line.trim()) {
-          try {
-            const data = JSON.parse(line);
-            if (data.type === 'item' && data.content) {
-              fullContent += data.content;
-            }
-          } catch (e) {
-            console.warn('[N8N API] Failed to parse line:', line);
-          }
+        if (!reader) {
+          controller.close();
+          return;
         }
-      }
-    }
 
-    console.log('[N8N API] Full content:', fullContent);
+        let buffer = '';
 
-    // Return the combined response
-    return new Response(JSON.stringify({ output: fullContent }), {
-      headers: { 'Content-Type': 'application/json' },
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              console.log('[N8N API] Stream complete');
+              controller.close();
+              break;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            console.log('[N8N API] Received chunk:', chunk.length, 'bytes');
+            console.log('[N8N API] Chunk content:', chunk);
+
+            buffer += chunk;
+
+            // Split by newlines to process complete JSON objects
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            console.log('[N8N API] Processing', lines.length, 'lines');
+
+            for (const line of lines) {
+              if (line.trim()) {
+                try {
+                  const data = JSON.parse(line);
+                  console.log('[N8N API] Parsed data:', data);
+                  if (data.type === 'item' && data.content) {
+                    console.log('[N8N API] Sending content chunk:', data.content);
+                    // Send each content chunk as it arrives
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: data.content })}\n\n`));
+                  }
+                } catch (e) {
+                  console.warn('[N8N API] Failed to parse line:', line);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('[N8N API] Stream error:', error);
+          controller.error(error);
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
     });
   } catch (error) {
     console.error('[N8N API] Error:', error);
