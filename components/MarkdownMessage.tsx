@@ -13,11 +13,37 @@ interface MarkdownMessageProps {
   className?: string;
 }
 
+/**
+ * Formats the content to ensure proper spacing between status messages and streaming responses.
+ * Adds line breaks before markdown headers that indicate the start of the main response.
+ */
+function formatContent(content: string): string {
+  // If content contains a markdown header (# ), ensure there's proper spacing before it
+  // This handles cases where status messages are followed immediately by the streaming response
+  const headerPattern = /([^\n])(# 🎯)/g;
+
+  // Add two newlines before headers that aren't already on a new line
+  let formatted = content.replace(headerPattern, "$1\n\n$2");
+
+  // Also handle other common separators
+  const commonSeparators = [
+    /([^\n])(#{1,6} [A-Z])/g, // Any header followed by capital letter
+  ];
+
+  commonSeparators.forEach(pattern => {
+    formatted = formatted.replace(pattern, "$1\n\n$2");
+  });
+
+  return formatted;
+}
+
 export function MarkdownMessage({
   content,
   isStreaming,
   className,
 }: MarkdownMessageProps) {
+  const formattedContent = formatContent(content);
+
   return (
     <div className={cn("text-[13px] leading-[1.5]", className)}>
       <ReactMarkdown
@@ -26,7 +52,7 @@ export function MarkdownMessage({
         components={{
           // Headings - compact with minimal spacing
           h1: ({ children }) => (
-            <h1 className="text-base font-semibold mt-3 mb-1.5 first:mt-0">
+            <h1 className="text-base font-semibold mt-4 mb-1.5 first:mt-0">
               {children}
             </h1>
           ),
@@ -164,7 +190,7 @@ export function MarkdownMessage({
           ),
         }}
       >
-        {content}
+        {formattedContent}
       </ReactMarkdown>
       {isStreaming && (
         <motion.span
