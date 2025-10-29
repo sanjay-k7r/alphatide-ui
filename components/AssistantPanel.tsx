@@ -25,6 +25,7 @@ import { AssistantHistory } from "@/components/AssistantHistory";
 import { QuestionsPanel } from "@/features/questions/components/QuestionsPanel";
 import { useAuth } from "@/providers/auth-provider";
 import { MarkdownMessage } from "@/components/MarkdownMessage";
+import { CopyButton } from "@/components/CopyButton";
 import type {
   UserAssistantSession,
   AssistantChatHistory as ChatMessage,
@@ -378,8 +379,8 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
                       ease: "easeOut",
                     }}
                     className={cn(
-                      "flex",
-                      message.role === "user" ? "justify-end" : "justify-start"
+                      "flex flex-col gap-1",
+                      message.role === "user" ? "items-end" : "items-start"
                     )}
                   >
                     <div
@@ -401,6 +402,40 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
                         />
                       )}
                     </div>
+
+                    {/* Timestamp and Copy Button (only for assistant messages) */}
+                    {message.role === "assistant" && !message.isStreaming && (
+                      <div className="flex items-center gap-2 px-1">
+                        <span className="text-[10px] text-muted-foreground/60">
+                          {(() => {
+                            const now = new Date();
+                            const msgDate = message.timestamp;
+                            const isToday = now.toDateString() === msgDate.toDateString();
+                            const isYesterday =
+                              new Date(now.getTime() - 86400000).toDateString() === msgDate.toDateString();
+
+                            const time = msgDate.toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            });
+
+                            if (isToday) {
+                              return time;
+                            } else if (isYesterday) {
+                              return `Yesterday ${time}`;
+                            } else {
+                              const date = msgDate.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              });
+                              return `${date} ${time}`;
+                            }
+                          })()}
+                        </span>
+                        <CopyButton content={message.content} />
+                      </div>
+                    )}
                   </motion.div>
                 ))}
               </AnimatePresence>
