@@ -2,7 +2,16 @@
 
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, Bot, User, History, Plus, ChevronDown, Sparkles } from "lucide-react";
+import {
+  Send,
+  Loader2,
+  Bot,
+  User,
+  History,
+  Plus,
+  ChevronDown,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -14,7 +23,10 @@ import {
 import { cn } from "@/lib/utils";
 import type { ColorScheme } from "@/hooks/useColorScheme";
 import { N8nChatHistory } from "@/components/N8nChatHistory";
-import type { UserN8nSession, N8nChatHistory as ChatMessage } from "@/lib/types/n8n-session";
+import type {
+  UserN8nSession,
+  N8nChatHistory as ChatMessage,
+} from "@/lib/types/n8n-session";
 import {
   DEFAULT_N8N_MODEL,
   N8N_MODEL_OPTIONS,
@@ -41,7 +53,8 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<N8nModel>(DEFAULT_N8N_MODEL);
+  const [selectedModel, setSelectedModel] =
+    useState<N8nModel>(DEFAULT_N8N_MODEL);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -63,25 +76,26 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
   // Create a new session when starting a new chat
   const createNewSession = async (firstMessage: string) => {
     try {
-      console.log('[N8N Chat] Creating new session...');
+      console.log("[N8N Chat] Creating new session...");
       const response = await fetch("/api/n8n-sessions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: firstMessage.slice(0, 50) + (firstMessage.length > 50 ? "..." : ""),
+          title:
+            firstMessage.slice(0, 50) + (firstMessage.length > 50 ? "..." : ""),
           model: selectedModel,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log('[N8N Chat] Session created:', data.session.session_id);
+        console.log("[N8N Chat] Session created:", data.session.session_id);
         setCurrentSessionId(data.session.session_id);
         return data.session.session_id;
       } else {
-        console.error('[N8N Chat] Failed to create session:', response.status);
+        console.error("[N8N Chat] Failed to create session:", response.status);
         return null;
       }
     } catch (error) {
@@ -144,7 +158,9 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(
+          errorData.error || `HTTP error! status: ${response.status}`
+        );
       }
 
       // Handle streaming response
@@ -152,18 +168,18 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
       const decoder = new TextDecoder();
 
       if (!reader) {
-        throw new Error('No response body');
+        throw new Error("No response body");
       }
 
-      let accumulatedContent = '';
+      let accumulatedContent = "";
 
-      console.log('[N8N Chat] Starting to read stream...');
+      console.log("[N8N Chat] Starting to read stream...");
 
       while (true) {
         const { done, value } = await reader.read();
 
         if (done) {
-          console.log('[N8N Chat] Stream complete');
+          console.log("[N8N Chat] Stream complete");
           // Mark streaming as complete
           setMessages((prev) =>
             prev.map((msg) =>
@@ -176,10 +192,10 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
         }
 
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        const lines = chunk.split("\n");
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6));
               if (data.content) {
@@ -189,18 +205,21 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
                 setMessages((prev) =>
                   prev.map((msg) =>
                     msg.id === assistantMessageId
-                      ? { ...msg, content: accumulatedContent, isStreaming: true }
+                      ? {
+                          ...msg,
+                          content: accumulatedContent,
+                          isStreaming: true,
+                        }
                       : msg
                   )
                 );
               }
             } catch (e) {
-              console.warn('[N8N Chat] Failed to parse SSE data:', line);
+              console.warn("[N8N Chat] Failed to parse SSE data:", line);
             }
           }
         }
       }
-
     } catch (error) {
       console.error("N8N chat error:", error);
 
@@ -210,9 +229,10 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
           msg.id === assistantMessageId
             ? {
                 ...msg,
-                content: error instanceof Error
-                  ? `Error: ${error.message}`
-                  : "Sorry, I encountered an error. Please try again.",
+                content:
+                  error instanceof Error
+                    ? `Error: ${error.message}`
+                    : "Sorry, I encountered an error. Please try again.",
                 isStreaming: false,
               }
             : msg
@@ -232,14 +252,14 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
   };
 
   const handleSessionSelect = async (session: UserN8nSession) => {
-    console.log('[N8N Chat] Loading session:', session.session_id);
+    console.log("[N8N Chat] Loading session:", session.session_id);
 
     try {
       // Fetch the full chat history for this session
       const response = await fetch(`/api/n8n-sessions/${session.session_id}`);
 
       if (!response.ok) {
-        throw new Error('Failed to load session');
+        throw new Error("Failed to load session");
       }
 
       const data = await response.json();
@@ -249,7 +269,7 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
       // n8n stores messages as JSONB: { type: 'human'|'ai', content: '...' }
       const loadedMessages: Message[] = chatMessages.map((msg) => ({
         id: String(msg.id),
-        role: msg.message.type === 'human' ? 'user' : 'assistant',
+        role: msg.message.type === "human" ? "user" : "assistant",
         content: msg.message.content,
         timestamp: new Date(),
       }));
@@ -258,9 +278,13 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
       setCurrentSessionId(session.session_id);
       setSelectedModel((session.model as N8nModel) || DEFAULT_N8N_MODEL);
 
-      console.log('[N8N Chat] Session loaded with', loadedMessages.length, 'messages');
+      console.log(
+        "[N8N Chat] Session loaded with",
+        loadedMessages.length,
+        "messages"
+      );
     } catch (error) {
-      console.error('[N8N Chat] Error loading session:', error);
+      console.error("[N8N Chat] Error loading session:", error);
     }
   };
 
@@ -320,9 +344,12 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-4">
                 <Bot className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Welcome to N8N Chat</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Welcome to N8N Chat
+              </h3>
               <p className="text-sm text-muted-foreground max-w-md">
-                Start a conversation with the N8N workflow assistant. Your chat history will be saved automatically.
+                Start a conversation with the N8N workflow assistant. Your chat
+                history will be saved automatically.
               </p>
             </div>
           ) : (
@@ -453,7 +480,7 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
             </DropdownMenu>
 
             <p className="text-xs text-muted-foreground">
-              Powered by n8n workflow
+              {/* Powered by n8n workflow */}
             </p>
           </div>
         </div>
@@ -464,6 +491,7 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         onSessionSelect={handleSessionSelect}
+        currentSessionId={currentSessionId || undefined}
       />
     </>
   );
