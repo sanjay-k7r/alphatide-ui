@@ -24,12 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useQuestions } from "@/features/questions/hooks/useQuestions";
 import { useTickers } from "@/features/tickers/hooks/useTickers";
@@ -295,7 +290,7 @@ export function QuestionsPanel({
       ) {
         event.currentTarget.releasePointerCapture(pointerIdRef.current);
       }
-    finishDrag(false);
+      finishDrag(false);
     },
     [finishDrag]
   );
@@ -352,7 +347,13 @@ export function QuestionsPanel({
         handleMobileOpenChange(false);
       }
     },
-    [handleMobileOpenChange, isDesktop, onQuestionInsert, replaceTicker, selectedTicker]
+    [
+      handleMobileOpenChange,
+      isDesktop,
+      onQuestionInsert,
+      replaceTicker,
+      selectedTicker,
+    ]
   );
 
   const handleQuestionCreated = async (input: {
@@ -463,9 +464,7 @@ export function QuestionsPanel({
               }
             }}
           >
-            <SheetHeader className="px-6 pt-6 pb-0">
-              <SheetTitle>Question Bank</SheetTitle>
-            </SheetHeader>
+            <SheetTitle className="sr-only">Question Bank</SheetTitle>
             <QuestionsPanelContent
               isMobile
               loading={questionsLoading}
@@ -574,61 +573,58 @@ function QuestionsPanelContent({
   userId,
 }: QuestionsPanelContentProps) {
   return (
-    <div
-      className={cn(
-        "flex h-full flex-col",
-        isMobile ? "px-4 pb-4" : "p-4"
-      )}
-    >
+    <div className={cn("flex h-full flex-col", isMobile ? "px-6 pt-6 pb-4" : "p-4")}>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-sidebar-foreground">
-            Questions
+            Question Bank
           </h2>
-          <div className="flex items-center gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              onClick={onManageTickers}
-              title="Manage tickers"
-            >
-              <Settings2 className="size-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              onClick={onAddQuestion}
-              disabled={!userId}
-              title={userId ? "Add question" : "Sign in to add questions"}
-            >
-              <Plus className="size-4" />
-            </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <TickerSelect
+              value={selectedTicker}
+              onValueChange={setSelectedTicker}
+              tickers={tickersProps.tickers}
+              loading={tickersProps.loading}
+              error={tickersProps.error}
+              onRefresh={tickersProps.refresh}
+              placeholder="Select a ticker"
+            />
           </div>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-10 w-10 shrink-0"
+            onClick={onManageTickers}
+            title="Manage tickers"
+          >
+            <Settings2 className="size-4" />
+          </Button>
         </div>
 
-        <div className="space-y-2">
-          <TickerSelect
-            value={selectedTicker}
-            onValueChange={setSelectedTicker}
-            tickers={tickersProps.tickers}
-            loading={tickersProps.loading}
-            error={tickersProps.error}
-            onRefresh={tickersProps.refresh}
-            placeholder="Select a ticker to personalise prompts…"
-          />
-        </div>
-
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search questions…"
-            className="h-10 rounded-lg border border-sidebar-border bg-background pl-10 text-sm"
-            aria-label="Search questions"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search questions…"
+              className="h-10 rounded-lg border border-sidebar-border bg-background pl-10 text-sm"
+              aria-label="Search questions"
+            />
+          </div>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-10 w-10 shrink-0"
+            onClick={onAddQuestion}
+            disabled={!userId}
+            title={userId ? "Add question" : "Sign in to add questions"}
+          >
+            <Settings2 className="size-4" />
+          </Button>
         </div>
       </div>
 

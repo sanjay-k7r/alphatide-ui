@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import type { ComponentProps } from "react"
-import { useCallback, useEffect, useMemo } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import type { ComponentProps } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   MessageCircle,
   MoreVertical,
@@ -10,22 +10,20 @@ import {
   Settings2,
   Waves,
   type LucideIcon,
-} from "lucide-react"
-import { toast } from "sonner"
+} from "lucide-react";
+import { toast } from "sonner";
 
-import { TAB_STORAGE_KEY } from "@/lib/navigation"
-import { useAuth } from "@/providers/auth-provider"
-import { createClient } from "@/lib/supabase/client"
+import { TAB_STORAGE_KEY } from "@/lib/navigation";
+import { useAuth } from "@/providers/auth-provider";
+import { createClient } from "@/lib/supabase/client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -39,14 +37,14 @@ import {
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 type NavItem = {
-  id: "chat" | "radar" | "assistant"
-  label: string
-  href: string
-  icon: LucideIcon
-}
+  id: "chat" | "radar" | "assistant";
+  label: string;
+  href: string;
+  icon: LucideIcon;
+};
 
 const NAV_ITEMS: NavItem[] = [
   {
@@ -68,85 +66,84 @@ const NAV_ITEMS: NavItem[] = [
   //   href: "/",
   //   icon: MessageCircle,
   // },
-]
-
+];
 
 export function LeftSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const { user } = useAuth()
-  const { isMobile } = useSidebar()
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user } = useAuth();
+  const { isMobile } = useSidebar();
 
-  const userEmail = user?.email ?? ""
+  const userEmail = user?.email ?? "";
   const userInitials = useMemo(() => {
-    const metadata = user?.user_metadata as { full_name?: string } | undefined
+    const metadata = user?.user_metadata as { full_name?: string } | undefined;
     if (metadata?.full_name && metadata.full_name.trim().length > 0) {
-      const parts = metadata.full_name.trim().split(/\s+/)
-      const initials = parts.slice(0, 2).map((part) => part[0] ?? "")
-      return initials.join("").toUpperCase()
+      const parts = metadata.full_name.trim().split(/\s+/);
+      const initials = parts.slice(0, 2).map((part) => part[0] ?? "");
+      return initials.join("").toUpperCase();
     }
     if (userEmail) {
-      const local = userEmail.split("@")[0] ?? ""
+      const local = userEmail.split("@")[0] ?? "";
       if (local.length >= 2) {
-        return local.slice(0, 2).toUpperCase()
+        return local.slice(0, 2).toUpperCase();
       }
       if (local.length === 1) {
-        return local.toUpperCase()
+        return local.toUpperCase();
       }
     }
-    return "US"
-  }, [user?.user_metadata, userEmail])
+    return "US";
+  }, [user?.user_metadata, userEmail]);
 
   const activeTab = pathname?.startsWith("/radar")
     ? "radar"
     : pathname?.startsWith("/assistant")
     ? "assistant"
-    : "chat"
-  const onSettingsRoute = pathname?.startsWith("/settings") ?? false
+    : "chat";
+  const onSettingsRoute = pathname?.startsWith("/settings") ?? false;
 
   useEffect(() => {
     for (const item of NAV_ITEMS) {
-      void router.prefetch(item.href)
+      void router.prefetch(item.href);
     }
-    void router.prefetch("/settings")
-  }, [router])
+    void router.prefetch("/settings");
+  }, [router]);
 
   const handleNavigate = useCallback(
     (item: NavItem) => {
       if (typeof window !== "undefined") {
-        window.localStorage.setItem(TAB_STORAGE_KEY, item.id)
+        window.localStorage.setItem(TAB_STORAGE_KEY, item.id);
       }
       if (pathname !== item.href) {
-        router.push(item.href)
+        router.push(item.href);
       }
     },
     [pathname, router]
-  )
+  );
 
   const handleSettingsNavigation = useCallback(() => {
     if (pathname !== "/settings") {
-      router.push("/settings")
+      router.push("/settings");
     }
-  }, [pathname, router])
+  }, [pathname, router]);
 
   const handleLogout = useCallback(async () => {
     try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signOut()
+      const supabase = createClient();
+      const { error } = await supabase.auth.signOut();
 
       if (error) {
-        toast.error("Failed to log out", { description: error.message })
-        return
+        toast.error("Failed to log out", { description: error.message });
+        return;
       }
 
-      toast.success("Logged out successfully")
-      router.push("/login")
-      router.refresh()
+      toast.success("Logged out successfully");
+      router.push("/login");
+      router.refresh();
     } catch (error) {
-      console.error("Unexpected logout error:", error)
-      toast.error("An unexpected error occurred during logout")
+      console.error("Unexpected logout error:", error);
+      toast.error("An unexpected error occurred during logout");
     }
-  }, [router])
+  }, [router]);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -169,7 +166,7 @@ export function LeftSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               {NAV_ITEMS.map((item) => {
-                const Icon = item.icon
+                const Icon = item.icon;
                 return (
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton
@@ -180,7 +177,7 @@ export function LeftSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                       <span>{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                )
+                );
               })}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -215,51 +212,22 @@ export function LeftSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{userInitials}</span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {userEmail || "No email available"}
-                    </span>
-                  </div>
+                  <span className="truncate text-sm">
+                    {userEmail || "No email available"}
+                  </span>
                   <MoreVertical className="ml-auto size-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-32 rounded-lg"
                 side={isMobile ? "bottom" : "right"}
                 align="end"
                 sideOffset={4}
               >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarFallback className="rounded-lg">
-                        {userInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-medium">{userInitials}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {userEmail || "No email available"}
-                      </span>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onSelect={(event) => {
-                    event.preventDefault()
-                    handleSettingsNavigation()
-                  }}
-                >
-                  <Settings2 className="mr-2 size-4" />
-                  Open settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={(event) => {
-                    event.preventDefault()
-                    void handleLogout()
+                    event.preventDefault();
+                    void handleLogout();
                   }}
                   className="text-destructive focus:text-destructive"
                 >
@@ -272,5 +240,5 @@ export function LeftSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
