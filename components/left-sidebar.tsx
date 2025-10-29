@@ -1,10 +1,9 @@
 "use client"
 
 import type { ComponentProps } from "react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import {
-  Bot,
   MessageCircle,
   MoreVertical,
   Radar,
@@ -51,9 +50,9 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    id: "chat",
+    id: "assistant",
     label: "Chat",
-    href: "/",
+    href: "/assistant",
     icon: MessageCircle,
   },
   {
@@ -62,12 +61,13 @@ const NAV_ITEMS: NavItem[] = [
     href: "/radar",
     icon: Radar,
   },
-  {
-    id: "assistant",
-    label: "Assistant",
-    href: "/assistant",
-    icon: Bot,
-  },
+  // Chat button hidden - keeping for reference
+  // {
+  //   id: "chat",
+  //   label: "Chat",
+  //   href: "/",
+  //   icon: MessageCircle,
+  // },
 ]
 
 

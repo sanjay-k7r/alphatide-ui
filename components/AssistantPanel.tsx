@@ -3,16 +3,13 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Send,
   Loader2,
-  Bot,
-  User,
   History,
   Plus,
   ChevronDown,
-  Sparkles,
   MessageCircle,
   Waves,
+  ArrowUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -438,12 +435,12 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
                 type="submit"
                 disabled={!input.trim() || isLoading}
                 size="icon"
-                className="absolute right-2 bottom-2 h-8 w-8 shrink-0 rounded-xl"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 shrink-0 rounded-full"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <ArrowUp className="h-4 w-4" />
                 )}
               </Button>
             </form>
