@@ -11,6 +11,8 @@ import {
   Plus,
   ChevronDown,
   Sparkles,
+  MessageCircle,
+  Waves,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +25,8 @@ import {
 import { cn } from "@/lib/utils";
 import type { ColorScheme } from "@/hooks/useColorScheme";
 import { AssistantHistory } from "@/components/AssistantHistory";
+import { QuestionsPanel } from "@/features/questions/components/QuestionsPanel";
+import { useAuth } from "@/providers/auth-provider";
 import type {
   UserAssistantSession,
   AssistantChatHistory as ChatMessage,
@@ -48,13 +52,16 @@ type AssistantPanelProps = {
 };
 
 export function AssistantPanel({ theme, className }: AssistantPanelProps) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [selectedModel, setSelectedModel] =
-    useState<AssistantModel>(DEFAULT_ASSISTANT_MODEL);
+  const [isQuestionsOpen, setIsQuestionsOpen] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<AssistantModel>(
+    DEFAULT_ASSISTANT_MODEL
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -256,7 +263,9 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
 
     try {
       // Fetch the full chat history for this session
-      const response = await fetch(`/api/assistant-sessions/${session.session_id}`);
+      const response = await fetch(
+        `/api/assistant-sessions/${session.session_id}`
+      );
 
       if (!response.ok) {
         throw new Error("Failed to load session");
@@ -276,7 +285,9 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
 
       setMessages(loadedMessages);
       setCurrentSessionId(session.session_id);
-      setSelectedModel((session.model as AssistantModel) || DEFAULT_ASSISTANT_MODEL);
+      setSelectedModel(
+        (session.model as AssistantModel) || DEFAULT_ASSISTANT_MODEL
+      );
 
       console.log(
         "[Assistant] Session loaded with",
@@ -294,6 +305,13 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
     setSelectedModel(DEFAULT_ASSISTANT_MODEL);
   };
 
+  const handleQuestionInsert = (text: string) => {
+    setInput(text);
+    setIsQuestionsOpen(false);
+    // Focus the textarea
+    textareaRef.current?.focus();
+  };
+
   return (
     <>
       <div
@@ -302,89 +320,79 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
           className
         )}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <Bot className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold">AI Assistant</h2>
-              <p className="text-xs text-muted-foreground">
-                {currentSessionId ? `Session active` : "Start a new chat"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+        {/* Minimalist Header */}
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon"
               onClick={handleNewChat}
-              className="h-9 w-9 rounded-full"
+              className="h-8 w-8 rounded-lg"
               title="New chat"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsHistoryOpen(true)}
-              className="h-9 w-9 rounded-full"
-              title="View chat history"
+              className="h-8 w-8 rounded-lg"
+              title="Chat history"
             >
-              <History className="h-5 w-5" />
+              <History className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsQuestionsOpen(true)}
+              className="h-8 w-8 rounded-lg"
+              title="Question bank"
+            >
+              <MessageCircle className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-6">
           {messages.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-4">
-                <Bot className="h-8 w-8 text-primary" />
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center max-w-md space-y-2">
+                <div className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted mb-2">
+                  <Waves className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <p className="text-md text-muted-foreground">Alphatide</p>
               </div>
-              <h3 className="text-lg font-semibold mb-2">
-                Welcome to AI Assistant
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-md">
-                Start a conversation with your AI assistant. Your chat
-                history will be saved automatically.
-              </p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 max-w-3xl mx-auto">
               <AnimatePresence initial={false}>
                 {messages.map((message) => (
                   <motion.div
                     key={message.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
+                    exit={{ opacity: 0, y: -10 }}
                     transition={{
-                      duration: 0.3,
-                      ease: [0.4, 0, 0.2, 1],
+                      duration: 0.2,
+                      ease: "easeOut",
                     }}
                     className={cn(
-                      "flex gap-3",
+                      "flex",
                       message.role === "user" ? "justify-end" : "justify-start"
                     )}
                   >
-                    {message.role === "assistant" && (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                        <Bot className="h-4 w-4 text-primary" />
-                      </div>
-                    )}
-
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-2xl px-4 py-3",
+                        "max-w-[85%] rounded-2xl px-4 py-2.5",
                         message.role === "user"
                           ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
+                          : "bg-muted/50"
                       )}
                     >
-                      <div className="whitespace-pre-wrap text-sm">
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed">
                         {message.content}
                         {message.isStreaming && (
                           <motion.span
@@ -395,17 +403,11 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
                               duration: 0.8,
                               ease: "easeInOut",
                             }}
-                            className="ml-1 inline-block h-4 w-1 bg-current"
+                            className="ml-1 inline-block h-3.5 w-0.5 bg-current"
                           />
                         )}
                       </div>
                     </div>
-
-                    {message.role === "user" && (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary">
-                        <User className="h-4 w-4 text-primary-foreground" />
-                      </div>
-                    )}
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -415,73 +417,75 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
         </div>
 
         {/* Input Area */}
-        <div className="border-t bg-background px-6 py-4">
-          <form onSubmit={handleSubmit} className="flex gap-3">
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              disabled={isLoading}
-              className="min-h-[44px] max-h-[200px] resize-none rounded-xl border-input bg-background px-4 py-3 text-sm focus-visible:ring-1 focus-visible:ring-primary"
-              rows={1}
-            />
-            <Button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              size="icon"
-              className="h-11 w-11 shrink-0 rounded-xl"
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
-            </Button>
-          </form>
+        <div className="border-t bg-background px-4 py-4">
+          <div className="max-w-3xl mx-auto">
+            <form onSubmit={handleSubmit} className="relative">
+              <Textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="What do you want to know?"
+                disabled={isLoading}
+                className={cn(
+                  "min-h-[52px] max-h-[200px] resize-none rounded-2xl border bg-muted/30 pr-12 pl-4 py-3.5 text-sm",
+                  "focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50",
+                  "placeholder:text-muted-foreground/60"
+                )}
+                rows={1}
+              />
+              <Button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                size="icon"
+                className="absolute right-2 bottom-2 h-8 w-8 shrink-0 rounded-xl"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </form>
 
-          {/* Model Selector and Footer */}
-          <div className="mt-2 flex items-center justify-between">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium",
-                    "text-muted-foreground hover:text-foreground",
-                    "transition-colors duration-150",
-                    "hover:bg-muted/50",
-                    "focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  )}
-                >
-                  <Sparkles className="h-3 w-3" />
-                  <span>{ASSISTANT_MODEL_LABELS[selectedModel]}</span>
-                  <ChevronDown className="h-3 w-3" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-40">
-                {ASSISTANT_MODEL_OPTIONS.map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onClick={() => setSelectedModel(option.value)}
+            {/* Model Selector Footer */}
+            <div className="mt-2 flex items-center justify-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
                     className={cn(
-                      "cursor-pointer",
-                      selectedModel === option.value && "bg-accent"
+                      "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs",
+                      "text-muted-foreground hover:text-foreground",
+                      "transition-colors duration-150",
+                      "hover:bg-muted/50",
+                      "focus:outline-none focus:ring-1 focus:ring-primary/20"
                     )}
                   >
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      <span>{option.label}</span>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <p className="text-xs text-muted-foreground">
-              {/* Powered by AI workflows */}
-            </p>
+                    {/* <Sparkles className="h-3 w-3" /> */}
+                    <span>{ASSISTANT_MODEL_LABELS[selectedModel]}</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-40">
+                  {ASSISTANT_MODEL_OPTIONS.map((option) => (
+                    <DropdownMenuItem
+                      key={option.value}
+                      onClick={() => setSelectedModel(option.value)}
+                      className={cn(
+                        "cursor-pointer text-sm",
+                        selectedModel === option.value && "bg-accent"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        {/* <Sparkles className="h-3.5 w-3.5" /> */}
+                        <span>{option.label}</span>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
@@ -492,6 +496,15 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
         onClose={() => setIsHistoryOpen(false)}
         onSessionSelect={handleSessionSelect}
         currentSessionId={currentSessionId || undefined}
+      />
+
+      {/* Questions Sidebar */}
+      <QuestionsPanel
+        currentUser={user}
+        onQuestionInsert={handleQuestionInsert}
+        isMobileOpen={isQuestionsOpen}
+        onMobileOpenChange={setIsQuestionsOpen}
+        forceSheetMode={true}
       />
     </>
   );

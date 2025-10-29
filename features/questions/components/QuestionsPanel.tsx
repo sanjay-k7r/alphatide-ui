@@ -56,6 +56,7 @@ interface QuestionsPanelProps {
   className?: string;
   isMobileOpen?: boolean;
   onMobileOpenChange?: (open: boolean) => void;
+  forceSheetMode?: boolean;
 }
 
 type FilteredQuestions = QuestionsByCategory;
@@ -79,10 +80,12 @@ export function QuestionsPanel({
   className,
   isMobileOpen,
   onMobileOpenChange,
+  forceSheetMode = false,
 }: QuestionsPanelProps) {
   const userId = currentUser?.id;
   const isAdmin = isAdminUser(userId);
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const mediaQueryIsDesktop = useMediaQuery("(min-width: 1024px)");
+  const isDesktop = forceSheetMode ? false : mediaQueryIsDesktop;
 
   const {
     questionsByCategory,
@@ -447,9 +450,8 @@ export function QuestionsPanel({
       ) : (
         <Sheet open={mobileOpen} onOpenChange={handleMobileOpenChange}>
           <SheetContent
-            side="bottom"
-            className={sheetClassName}
-            style={sheetStyle}
+            side="right"
+            className="w-full max-w-md p-0 overflow-hidden"
             onInteractOutside={(event) => {
               const target = event.target as Element;
               if (
@@ -461,17 +463,9 @@ export function QuestionsPanel({
               }
             }}
           >
-            <SheetHeader className="sr-only">
-              <SheetTitle>Questions panel</SheetTitle>
+            <SheetHeader className="px-6 pt-6 pb-0">
+              <SheetTitle>Question Bank</SheetTitle>
             </SheetHeader>
-            <div
-              className="mx-auto mt-3 mb-2 h-1.5 w-12 rounded-full bg-muted-foreground/40"
-              style={{ touchAction: "none" }}
-              onPointerDown={handleDragStart}
-              onPointerMove={handleDragMove}
-              onPointerUp={handleDragEnd}
-              onPointerCancel={handleDragCancel}
-            />
             <QuestionsPanelContent
               isMobile
               loading={questionsLoading}
