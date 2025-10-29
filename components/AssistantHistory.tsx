@@ -7,21 +7,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import type { UserN8nSession, SessionWithFirstMessage } from "@/lib/types/n8n-session"
+import type { UserAssistantSession, SessionWithFirstMessage } from "@/lib/types/assistant-session"
 
-type N8nChatHistoryProps = {
+type AssistantHistoryProps = {
   isOpen: boolean
   onClose: () => void
-  onSessionSelect: (session: UserN8nSession) => void
+  onSessionSelect: (session: UserAssistantSession) => void
   currentSessionId?: string  // Track current session to know when new chat is created
 }
 
-export function N8nChatHistory({
+export function AssistantHistory({
   isOpen,
   onClose,
   onSessionSelect,
   currentSessionId,
-}: N8nChatHistoryProps) {
+}: AssistantHistoryProps) {
   const [sessions, setSessions] = useState<SessionWithFirstMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -38,7 +38,7 @@ export function N8nChatHistory({
     const shouldLoad = !hasLoadedOnce || (currentSessionId && currentSessionId !== lastSessionId)
 
     if (shouldLoad) {
-      console.log('[N8N Chat History] Loading sessions...', {
+      console.log('[Assistant History] Loading sessions...', {
         reason: !hasLoadedOnce ? 'first load' : 'new chat created',
         currentSessionId
       })
@@ -47,7 +47,7 @@ export function N8nChatHistory({
         setLastSessionId(currentSessionId)
       }
     } else {
-      console.log('[N8N Chat History] Using cached data (history is immutable)')
+      console.log('[Assistant History] Using cached data (history is immutable)')
     }
   }, [isOpen, currentSessionId])
 
@@ -56,23 +56,23 @@ export function N8nChatHistory({
     setError(null)
 
     try {
-      console.log('[N8N Chat History] Loading sessions...')
-      const response = await fetch("/api/n8n-sessions")
+      console.log('[Assistant History] Loading sessions...')
+      const response = await fetch("/api/assistant-sessions")
 
-      console.log('[N8N Chat History] Response status:', response.status)
+      console.log('[Assistant History] Response status:', response.status)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        console.error('[N8N Chat History] Error response:', errorData)
+        console.error('[Assistant History] Error response:', errorData)
         throw new Error(errorData.error || "Failed to load chat history")
       }
 
       const data = await response.json()
-      console.log('[N8N Chat History] Loaded sessions:', data.sessions?.length || 0)
+      console.log('[Assistant History] Loaded sessions:', data.sessions?.length || 0)
       setSessions(data.sessions || [])
       setHasLoadedOnce(true)
     } catch (err) {
-      console.error("[N8N Chat History] Error loading sessions:", err)
+      console.error("[Assistant History] Error loading sessions:", err)
       setError(err instanceof Error ? err.message : "Failed to load chat history")
     } finally {
       setIsLoading(false)
@@ -81,7 +81,7 @@ export function N8nChatHistory({
 
   // Manual refresh button - user can force refresh if needed
   const handleManualRefresh = () => {
-    console.log('[N8N Chat History] Manual refresh requested')
+    console.log('[Assistant History] Manual refresh requested')
     loadSessions()
   }
 
@@ -89,7 +89,7 @@ export function N8nChatHistory({
     e.stopPropagation()
 
     try {
-      const response = await fetch(`/api/n8n-sessions/${sessionId}`, {
+      const response = await fetch(`/api/assistant-sessions/${sessionId}`, {
         method: "DELETE",
       })
 

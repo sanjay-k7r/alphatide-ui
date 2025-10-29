@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import type { CreateSessionInput } from '@/lib/types/n8n-session'
+import type { CreateSessionInput } from '@/lib/types/assistant-session'
 import { randomUUID } from 'crypto'
 
-// GET /api/n8n-sessions - List all sessions for the current user with first message
+// GET /api/assistant-sessions - List all sessions for the current user with first message
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -26,17 +26,17 @@ export async function GET(request: NextRequest) {
       .order('updated_at', { ascending: false })
 
     if (error) {
-      console.error('[N8N Sessions API] Error fetching sessions:', error)
+      console.error('[Assistant Sessions API] Error fetching sessions:', error)
       return NextResponse.json(
         { error: 'Failed to fetch sessions', details: error.message },
         { status: 500 }
       )
     }
 
-    // For each session, get the first user message from n8n_chat_histories
+    // For each session, get the first user message from chat histories
     const sessionsWithMessages = await Promise.all(
       (sessions || []).map(async (session) => {
-        // n8n stores messages as JSONB: { type: 'human'|'ai', content: '...' }
+        // Workflow stores messages as JSONB: { type: 'human'|'ai', content: '...' }
         const { data: messages } = await supabase
           .from('n8n_chat_histories')
           .select('message')
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ sessions: sessionsWithMessages })
   } catch (error) {
-    console.error('[N8N Sessions API] Unexpected error fetching sessions:', error)
+    console.error('[Assistant Sessions API] Unexpected error fetching sessions:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/n8n-sessions - Create a new session
+// POST /api/assistant-sessions - Create a new session
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     const body: CreateSessionInput = await request.json()
 
     const now = new Date().toISOString()
-    const sessionId = `n8n-${randomUUID()}`
+    const sessionId = `session-${randomUUID()}`
 
     const sessionData = {
       user_id: user.id,
@@ -109,17 +109,17 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('[N8N Sessions API] Error creating session:', error)
+      console.error('[Assistant Sessions API] Error creating session:', error)
       return NextResponse.json(
         { error: 'Failed to create session', details: error.message },
         { status: 500 }
       )
     }
 
-    console.log('[N8N Sessions API] Session created:', sessionId)
+    console.log('[Assistant Sessions API] Session created:', sessionId)
     return NextResponse.json({ session }, { status: 201 })
   } catch (error) {
-    console.error('[N8N Sessions API] Unexpected error creating session:', error)
+    console.error('[Assistant Sessions API] Unexpected error creating session:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

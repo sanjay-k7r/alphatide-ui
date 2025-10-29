@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-type N8nChatContextType = {
+type AssistantContextType = {
   isOpen: boolean;
   isMobileOpen: boolean;
   openMobilePanel: () => void;
@@ -11,11 +11,11 @@ type N8nChatContextType = {
   toggleChat: () => void;
 };
 
-const N8nChatContext = createContext<N8nChatContextType | undefined>(
+const AssistantContext = createContext<AssistantContextType | undefined>(
   undefined
 );
 
-export function N8nChatProvider({ children }: { children: ReactNode }) {
+export function AssistantProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -25,7 +25,7 @@ export function N8nChatProvider({ children }: { children: ReactNode }) {
   const toggleChat = () => setIsOpen((prev) => !prev);
 
   return (
-    <N8nChatContext.Provider
+    <AssistantContext.Provider
       value={{
         isOpen,
         isMobileOpen,
@@ -36,14 +36,14 @@ export function N8nChatProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </N8nChatContext.Provider>
+    </AssistantContext.Provider>
   );
 }
 
-export function useN8nChat() {
-  const context = useContext(N8nChatContext);
+export function useAssistant() {
+  const context = useContext(AssistantContext);
   if (context === undefined) {
-    throw new Error("useN8nChat must be used within N8nChatProvider");
+    throw new Error("useAssistant must be used within AssistantProvider");
   }
   return context;
 }

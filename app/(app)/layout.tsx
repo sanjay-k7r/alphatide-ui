@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import { TAB_STORAGE_KEY } from "@/lib/navigation"
 import { QuestionsPanelProvider, useQuestionsPanel } from "@/providers/questions-panel-provider"
-import { N8nChatProvider } from "@/providers/n8n-chat-provider"
+import { AssistantProvider } from "@/providers/assistant-provider"
 import App from "../App"
 import { RadarDashboard } from "./radar/radar-dashboard"
 
@@ -42,29 +42,29 @@ export default function AppLayout({
   }, [pathname, router])
 
   const isRadarActive = segment === "radar"
-  const isN8nChatActive = segment === "n8n-chat"
+  const isAssistantActive = segment === "assistant"
   const isSettingsActive = segment === "settings"
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return
     }
-    const tab = isRadarActive ? "radar" : isN8nChatActive ? "n8n-chat" : "chat"
+    const tab = isRadarActive ? "radar" : isAssistantActive ? "assistant" : "chat"
     window.localStorage.setItem(TAB_STORAGE_KEY, tab)
-  }, [isRadarActive, isN8nChatActive])
+  }, [isRadarActive, isAssistantActive])
 
   return (
     <QuestionsPanelProvider>
-      <N8nChatProvider>
+      <AssistantProvider>
         <SidebarProvider className="min-h-screen">
           <LeftSidebar />
           <SidebarInset>
-            <AppLayoutContent isRadarActive={isRadarActive} isN8nChatActive={isN8nChatActive} isSettingsActive={isSettingsActive}>
+            <AppLayoutContent isRadarActive={isRadarActive} isAssistantActive={isAssistantActive} isSettingsActive={isSettingsActive}>
               {children}
             </AppLayoutContent>
           </SidebarInset>
         </SidebarProvider>
-      </N8nChatProvider>
+      </AssistantProvider>
     </QuestionsPanelProvider>
   )
 }
@@ -72,12 +72,12 @@ export default function AppLayout({
 function AppLayoutContent({
   children,
   isRadarActive,
-  isN8nChatActive,
+  isAssistantActive,
   isSettingsActive,
 }: {
   children: ReactNode
   isRadarActive: boolean
-  isN8nChatActive: boolean
+  isAssistantActive: boolean
   isSettingsActive: boolean
 }) {
   const { openMobilePanel } = useQuestionsPanel()
@@ -108,13 +108,13 @@ function AppLayoutContent({
       <main className="flex-1">
         {showDefaultViews ? (
           <>
-            <div className={!isRadarActive && !isN8nChatActive ? "block" : "hidden"} aria-hidden={isRadarActive || isN8nChatActive}>
+            <div className={!isRadarActive && !isAssistantActive ? "block" : "hidden"} aria-hidden={isRadarActive || isAssistantActive}>
               <App />
             </div>
             <div className={isRadarActive ? "block" : "hidden"} aria-hidden={!isRadarActive}>
               <RadarDashboard />
             </div>
-            <div className={isN8nChatActive ? "block" : "hidden"} aria-hidden={!isN8nChatActive}>
+            <div className={isAssistantActive ? "block" : "hidden"} aria-hidden={!isAssistantActive}>
               {children}
             </div>
           </>

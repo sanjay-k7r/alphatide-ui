@@ -5,7 +5,7 @@ type RouteContext = {
   params: Promise<{ session_id: string }>
 }
 
-// GET /api/n8n-sessions/:session_id - Get session with full chat history
+// GET /api/assistant-sessions/:session_id - Get session with full chat history
 export async function GET(
   request: NextRequest,
   context: RouteContext
@@ -39,15 +39,15 @@ export async function GET(
           { status: 404 }
         )
       }
-      console.error('[N8N Sessions API] Error fetching session:', sessionError)
+      console.error('[Assistant Sessions API] Error fetching session:', sessionError)
       return NextResponse.json(
         { error: 'Failed to fetch session', details: sessionError.message },
         { status: 500 }
       )
     }
 
-    // Fetch chat history for this session from n8n_chat_histories
-    // Note: n8n chat memory uses 'id' for ordering, not 'created_at'
+    // Fetch chat history for this session from chat_histories
+    // Note: chat memory uses 'id' for ordering, not 'created_at'
     const { data: messages, error: messagesError } = await supabase
       .from('n8n_chat_histories')
       .select('*')
@@ -55,7 +55,7 @@ export async function GET(
       .order('id', { ascending: true })
 
     if (messagesError) {
-      console.error('[N8N Sessions API] Error fetching messages:', messagesError)
+      console.error('[Assistant Sessions API] Error fetching messages:', messagesError)
       return NextResponse.json(
         { error: 'Failed to fetch messages', details: messagesError.message },
         { status: 500 }
@@ -67,7 +67,7 @@ export async function GET(
       messages: messages || [],
     })
   } catch (error) {
-    console.error('[N8N Sessions API] Unexpected error fetching session:', error)
+    console.error('[Assistant Sessions API] Unexpected error fetching session:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -75,7 +75,7 @@ export async function GET(
   }
 }
 
-// DELETE /api/n8n-sessions/:session_id - Delete a session
+// DELETE /api/assistant-sessions/:session_id - Delete a session
 export async function DELETE(
   request: NextRequest,
   context: RouteContext
@@ -102,19 +102,19 @@ export async function DELETE(
       .eq('user_id', user.id)
 
     if (error) {
-      console.error('[N8N Sessions API] Error deleting session:', error)
+      console.error('[Assistant Sessions API] Error deleting session:', error)
       return NextResponse.json(
         { error: 'Failed to delete session', details: error.message },
         { status: 500 }
       )
     }
 
-    // Note: We don't delete from n8n_chat_histories to preserve the data
+    // Note: We don't delete from chat_histories to preserve the data
     // You can add this if you want to delete the messages too
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('[N8N Sessions API] Unexpected error deleting session:', error)
+    console.error('[Assistant Sessions API] Unexpected error deleting session:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -122,7 +122,7 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/n8n-sessions/:session_id - Update session (e.g., title)
+// PATCH /api/assistant-sessions/:session_id - Update session (e.g., title)
 export async function PATCH(
   request: NextRequest,
   context: RouteContext
@@ -163,7 +163,7 @@ export async function PATCH(
           { status: 404 }
         )
       }
-      console.error('[N8N Sessions API] Error updating session:', error)
+      console.error('[Assistant Sessions API] Error updating session:', error)
       return NextResponse.json(
         { error: 'Failed to update session', details: error.message },
         { status: 500 }
@@ -172,7 +172,7 @@ export async function PATCH(
 
     return NextResponse.json({ session })
   } catch (error) {
-    console.error('[N8N Sessions API] Unexpected error updating session:', error)
+    console.error('[Assistant Sessions API] Unexpected error updating session:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -7,24 +7,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { message, sessionId, model } = body;
 
-    console.log('[N8N API] Request received:', { message, sessionId, model });
+    console.log('[Assistant API] Request received:', { message, sessionId, model });
 
     // Get webhook URL from environment
     const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
 
-    console.log('[N8N API] Webhook URL:', webhookUrl);
+    console.log('[Assistant API] Webhook URL:', webhookUrl);
 
     if (!webhookUrl) {
-      console.error('[N8N API] No webhook URL configured');
+      console.error('[Assistant API] No webhook URL configured');
       return new Response(
-        JSON.stringify({ error: 'N8N webhook URL not configured' }),
+        JSON.stringify({ error: 'Webhook URL not configured' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // Make request to n8n webhook using POST with JSON body
-    console.log('[N8N API] Sending to n8n webhook...');
-    console.log('[N8N API] Webhook URL:', webhookUrl);
+    // Make request to workflow webhook using POST with JSON body
+    console.log('[Assistant API] Sending to workflow webhook...');
+    console.log('[Assistant API] Webhook URL:', webhookUrl);
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -35,21 +35,21 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         chatInput: message,
         model: model || 'claude-4-5', // Default to claude-4-5 if not provided
-        sessionId, // Pass sessionId to n8n for chat memory
+        sessionId, // Pass sessionId for chat memory
       }),
     });
 
-    console.log('[N8N API] Response status:', response.status);
-    console.log('[N8N API] Response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('[Assistant API] Response status:', response.status);
+    console.log('[Assistant API] Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[N8N API] Error response:', errorText);
-      throw new Error(`N8N webhook returned ${response.status}: ${errorText}`);
+      console.error('[Assistant API] Error response:', errorText);
+      throw new Error(`Webhook returned ${response.status}: ${errorText}`);
     }
 
     // Stream the response back to the client
-    // n8n sends newline-delimited JSON, we'll forward it as text/event-stream
+    // Workflow sends newline-delimited JSON, we'll forward it as text/event-stream
     const stream = new ReadableStream({
       async start(controller) {
         const reader = response.body?.getReader();
@@ -68,14 +68,14 @@ export async function POST(request: NextRequest) {
             const { done, value } = await reader.read();
 
             if (done) {
-              console.log('[N8N API] Stream complete');
+              console.log('[Assistant API] Stream complete');
               controller.close();
               break;
             }
 
             const chunk = decoder.decode(value, { stream: true });
-            console.log('[N8N API] Received chunk:', chunk.length, 'bytes');
-            console.log('[N8N API] Chunk content:', chunk);
+            console.log('[Assistant API] Received chunk:', chunk.length, 'bytes');
+            console.log('[Assistant API] Chunk content:', chunk);
 
             buffer += chunk;
 
@@ -83,26 +83,26 @@ export async function POST(request: NextRequest) {
             const lines = buffer.split('\n');
             buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-            console.log('[N8N API] Processing', lines.length, 'lines');
+            console.log('[Assistant API] Processing', lines.length, 'lines');
 
             for (const line of lines) {
               if (line.trim()) {
                 try {
                   const data = JSON.parse(line);
-                  console.log('[N8N API] Parsed data:', data);
+                  console.log('[Assistant API] Parsed data:', data);
                   if (data.type === 'item' && data.content) {
-                    console.log('[N8N API] Sending content chunk:', data.content);
+                    console.log('[Assistant API] Sending content chunk:', data.content);
                     // Send each content chunk as it arrives
                     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: data.content })}\n\n`));
                   }
                 } catch (e) {
-                  console.warn('[N8N API] Failed to parse line:', line);
+                  console.warn('[Assistant API] Failed to parse line:', line);
                 }
               }
             }
           }
         } catch (error) {
-          console.error('[N8N API] Stream error:', error);
+          console.error('[Assistant API] Stream error:', error);
           controller.error(error);
         }
       },
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[N8N API] Error:', error);
+    console.error('[Assistant API] Error:', error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Failed to process chat message',

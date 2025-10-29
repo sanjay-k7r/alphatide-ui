@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/sidebar"
 
 type NavItem = {
-  id: "chat" | "radar" | "n8n-chat"
+  id: "chat" | "radar" | "assistant"
   label: string
   href: string
   icon: LucideIcon
@@ -63,9 +63,9 @@ const NAV_ITEMS: NavItem[] = [
     icon: Radar,
   },
   {
-    id: "n8n-chat",
-    label: "N8N Chat",
-    href: "/n8n-chat",
+    id: "assistant",
+    label: "Assistant",
+    href: "/assistant",
     icon: Bot,
   },
 ]
@@ -99,8 +99,8 @@ export function LeftSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 
   const activeTab = pathname?.startsWith("/radar")
     ? "radar"
-    : pathname?.startsWith("/n8n-chat")
-    ? "n8n-chat"
+    : pathname?.startsWith("/assistant")
+    ? "assistant"
     : "chat"
   const onSettingsRoute = pathname?.startsWith("/settings") ?? false
 

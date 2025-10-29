@@ -22,17 +22,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { ColorScheme } from "@/hooks/useColorScheme";
-import { N8nChatHistory } from "@/components/N8nChatHistory";
+import { AssistantHistory } from "@/components/AssistantHistory";
 import type {
-  UserN8nSession,
-  N8nChatHistory as ChatMessage,
-} from "@/lib/types/n8n-session";
+  UserAssistantSession,
+  AssistantChatHistory as ChatMessage,
+} from "@/lib/types/assistant-session";
 import {
-  DEFAULT_N8N_MODEL,
-  N8N_MODEL_OPTIONS,
-  N8N_MODEL_LABELS,
-  type N8nModel,
-} from "@/lib/config/n8n-models";
+  DEFAULT_ASSISTANT_MODEL,
+  ASSISTANT_MODEL_OPTIONS,
+  ASSISTANT_MODEL_LABELS,
+  type AssistantModel,
+} from "@/lib/config/assistant-models";
 
 type Message = {
   id: string;
@@ -42,19 +42,19 @@ type Message = {
   isStreaming?: boolean;
 };
 
-type N8nChatPanelProps = {
+type AssistantPanelProps = {
   theme: ColorScheme;
   className?: string;
 };
 
-export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
+export function AssistantPanel({ theme, className }: AssistantPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [selectedModel, setSelectedModel] =
-    useState<N8nModel>(DEFAULT_N8N_MODEL);
+    useState<AssistantModel>(DEFAULT_ASSISTANT_MODEL);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -76,8 +76,8 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
   // Create a new session when starting a new chat
   const createNewSession = async (firstMessage: string) => {
     try {
-      console.log("[N8N Chat] Creating new session...");
-      const response = await fetch("/api/n8n-sessions", {
+      console.log("[Assistant] Creating new session...");
+      const response = await fetch("/api/assistant-sessions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,15 +91,15 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("[N8N Chat] Session created:", data.session.session_id);
+        console.log("[Assistant] Session created:", data.session.session_id);
         setCurrentSessionId(data.session.session_id);
         return data.session.session_id;
       } else {
-        console.error("[N8N Chat] Failed to create session:", response.status);
+        console.error("[Assistant] Failed to create session:", response.status);
         return null;
       }
     } catch (error) {
-      console.error("[N8N Chat] Error creating session:", error);
+      console.error("[Assistant] Error creating session:", error);
       return null;
     }
   };
@@ -143,7 +143,7 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
 
       abortControllerRef.current = new AbortController();
 
-      const response = await fetch("/api/n8n-chat", {
+      const response = await fetch("/api/assistant", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -173,13 +173,13 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
 
       let accumulatedContent = "";
 
-      console.log("[N8N Chat] Starting to read stream...");
+      console.log("[Assistant] Starting to read stream...");
 
       while (true) {
         const { done, value } = await reader.read();
 
         if (done) {
-          console.log("[N8N Chat] Stream complete");
+          console.log("[Assistant] Stream complete");
           // Mark streaming as complete
           setMessages((prev) =>
             prev.map((msg) =>
@@ -215,13 +215,13 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
                 );
               }
             } catch (e) {
-              console.warn("[N8N Chat] Failed to parse SSE data:", line);
+              console.warn("[Assistant] Failed to parse SSE data:", line);
             }
           }
         }
       }
     } catch (error) {
-      console.error("N8N chat error:", error);
+      console.error("Assistant chat error:", error);
 
       // Update assistant message with error
       setMessages((prev) =>
@@ -251,12 +251,12 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
     }
   };
 
-  const handleSessionSelect = async (session: UserN8nSession) => {
-    console.log("[N8N Chat] Loading session:", session.session_id);
+  const handleSessionSelect = async (session: UserAssistantSession) => {
+    console.log("[Assistant] Loading session:", session.session_id);
 
     try {
       // Fetch the full chat history for this session
-      const response = await fetch(`/api/n8n-sessions/${session.session_id}`);
+      const response = await fetch(`/api/assistant-sessions/${session.session_id}`);
 
       if (!response.ok) {
         throw new Error("Failed to load session");
@@ -266,7 +266,7 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
       const chatMessages: ChatMessage[] = data.messages || [];
 
       // Convert to Message format
-      // n8n stores messages as JSONB: { type: 'human'|'ai', content: '...' }
+      // Workflow stores messages as JSONB: { type: 'human'|'ai', content: '...' }
       const loadedMessages: Message[] = chatMessages.map((msg) => ({
         id: String(msg.id),
         role: msg.message.type === "human" ? "user" : "assistant",
@@ -276,22 +276,22 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
 
       setMessages(loadedMessages);
       setCurrentSessionId(session.session_id);
-      setSelectedModel((session.model as N8nModel) || DEFAULT_N8N_MODEL);
+      setSelectedModel((session.model as AssistantModel) || DEFAULT_ASSISTANT_MODEL);
 
       console.log(
-        "[N8N Chat] Session loaded with",
+        "[Assistant] Session loaded with",
         loadedMessages.length,
         "messages"
       );
     } catch (error) {
-      console.error("[N8N Chat] Error loading session:", error);
+      console.error("[Assistant] Error loading session:", error);
     }
   };
 
   const handleNewChat = () => {
     setMessages([]);
     setCurrentSessionId(null);
-    setSelectedModel(DEFAULT_N8N_MODEL);
+    setSelectedModel(DEFAULT_ASSISTANT_MODEL);
   };
 
   return (
@@ -309,7 +309,7 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
               <Bot className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold">N8N Assistant</h2>
+              <h2 className="text-sm font-semibold">AI Assistant</h2>
               <p className="text-xs text-muted-foreground">
                 {currentSessionId ? `Session active` : "Start a new chat"}
               </p>
@@ -345,10 +345,10 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
                 <Bot className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold mb-2">
-                Welcome to N8N Chat
+                Welcome to AI Assistant
               </h3>
               <p className="text-sm text-muted-foreground max-w-md">
-                Start a conversation with the N8N workflow assistant. Your chat
+                Start a conversation with your AI assistant. Your chat
                 history will be saved automatically.
               </p>
             </div>
@@ -456,12 +456,12 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
                   )}
                 >
                   <Sparkles className="h-3 w-3" />
-                  <span>{N8N_MODEL_LABELS[selectedModel]}</span>
+                  <span>{ASSISTANT_MODEL_LABELS[selectedModel]}</span>
                   <ChevronDown className="h-3 w-3" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-40">
-                {N8N_MODEL_OPTIONS.map((option) => (
+                {ASSISTANT_MODEL_OPTIONS.map((option) => (
                   <DropdownMenuItem
                     key={option.value}
                     onClick={() => setSelectedModel(option.value)}
@@ -480,14 +480,14 @@ export function N8nChatPanel({ theme, className }: N8nChatPanelProps) {
             </DropdownMenu>
 
             <p className="text-xs text-muted-foreground">
-              {/* Powered by n8n workflow */}
+              {/* Powered by AI workflows */}
             </p>
           </div>
         </div>
       </div>
 
       {/* Chat History Sidebar */}
-      <N8nChatHistory
+      <AssistantHistory
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         onSessionSelect={handleSessionSelect}
