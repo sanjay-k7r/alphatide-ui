@@ -4,7 +4,7 @@ import type { CreateThreadInput } from '@/lib/types/thread'
 import { randomUUID } from 'crypto'
 
 // GET /api/threads - List all threads for the current user
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
 

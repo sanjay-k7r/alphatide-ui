@@ -220,8 +220,8 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
                   )
                 );
               }
-            } catch (e) {
-              console.warn("[Assistant] Failed to parse SSE data:", line);
+            } catch (error) {
+              console.warn("[Assistant] Failed to parse SSE data:", line, error);
             }
           }
         }
@@ -318,6 +318,7 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
           "flex h-[90vh] w-full flex-col overflow-hidden rounded-2xl border bg-background",
           className
         )}
+        data-color-scheme={theme}
       >
         {/* Minimalist Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">

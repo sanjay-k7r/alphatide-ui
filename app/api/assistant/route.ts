@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
                     // Send each content chunk as it arrives
                     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: data.content })}\n\n`));
                   }
-                } catch (e) {
-                  console.warn('[Assistant API] Failed to parse line:', line);
+                } catch (parseError) {
+                  console.warn('[Assistant API] Failed to parse line:', line, parseError);
                 }
               }
             }

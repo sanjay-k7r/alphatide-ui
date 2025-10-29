@@ -4,7 +4,7 @@ import type { CreateSessionInput } from '@/lib/types/assistant-session'
 import { randomUUID } from 'crypto'
 
 // GET /api/assistant-sessions - List all sessions for the current user with first message
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
 

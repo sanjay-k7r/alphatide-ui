@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, MessageSquare, Trash2, Clock, Search, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -32,26 +32,7 @@ export function AssistantHistory({
   // Load sessions ONLY when:
   // 1. First time opening (hasn't loaded once)
   // 2. A new chat was created (currentSessionId changed)
-  useEffect(() => {
-    if (!isOpen) return
-
-    const shouldLoad = !hasLoadedOnce || (currentSessionId && currentSessionId !== lastSessionId)
-
-    if (shouldLoad) {
-      console.log('[Assistant History] Loading sessions...', {
-        reason: !hasLoadedOnce ? 'first load' : 'new chat created',
-        currentSessionId
-      })
-      loadSessions()
-      if (currentSessionId) {
-        setLastSessionId(currentSessionId)
-      }
-    } else {
-      console.log('[Assistant History] Using cached data (history is immutable)')
-    }
-  }, [isOpen, currentSessionId])
-
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -77,7 +58,26 @@ export function AssistantHistory({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const shouldLoad = !hasLoadedOnce || (currentSessionId && currentSessionId !== lastSessionId)
+
+    if (shouldLoad) {
+      console.log('[Assistant History] Loading sessions...', {
+        reason: !hasLoadedOnce ? 'first load' : 'new chat created',
+        currentSessionId
+      })
+      loadSessions()
+      if (currentSessionId) {
+        setLastSessionId(currentSessionId)
+      }
+    } else {
+      console.log('[Assistant History] Using cached data (history is immutable)')
+    }
+  }, [currentSessionId, hasLoadedOnce, isOpen, lastSessionId, loadSessions])
 
   // Manual refresh button - user can force refresh if needed
   const handleManualRefresh = () => {
