@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { APP_VERSION } from "@/lib/config";
 import { TAB_STORAGE_KEY } from "@/lib/navigation";
 import { useAuth } from "@/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
@@ -156,6 +157,9 @@ export function LeftSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             >
               <Waves className="size-5" />
               <span>Alphatide</span>
+              <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                v{APP_VERSION}
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -4,6 +4,8 @@ import type {
   StartScreenPrompt,
 } from "@openai/chatkit";
 
+export const APP_VERSION = "0.9.0";
+
 export const WORKFLOW_ID =
   process.env.NEXT_PUBLIC_CHATKIT_WORKFLOW_ID?.trim() ?? "";
 
@@ -31,8 +33,6 @@ export const DISCLAIMER_TEXT =
 
 type ChatKitTheme = ChatKitOptions["theme"];
 
-export const getThemeConfig = (
-  theme: ColorScheme
-): ChatKitTheme => ({
+export const getThemeConfig = (theme: ColorScheme): ChatKitTheme => ({
   colorScheme: theme,
 });
