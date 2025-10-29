@@ -72,10 +72,10 @@ Before deploying your app, you need to verify the domain by adding it to the [Do
 
 curl -X POST \
  -H "Content-Type: application/json" \
- -d '{ "chatInput": "Hello n8n!" }' \
+ -d '{ "chatInput": "Hello kevin!", "model":"claude-4-5", "sessionId":"12345678910" }' \
  https://n8n-latest-8nkc.onrender.com/webhook-test/c7966265-2425-43fa-9607-14978e21f91e
 
-curl -X GET \
+curl -X POST \
  -H "Content-Type: application/json" \
- -d '{ "chatInput": "Hello n8n!" }' \
+ -d '{ "chatInput": "Hello n8n!", "model":"claude-4-5", "sessionId":"12345" }' \
  https://n8n-latest-8nkc.onrender.com/webhook/c7966265-2425-43fa-9607-14978e21f91e

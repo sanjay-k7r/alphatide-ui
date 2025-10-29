@@ -5,9 +5,9 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, sessionId } = body;
+    const { message, sessionId, model } = body;
 
-    console.log('[N8N API] Request received:', { message, sessionId });
+    console.log('[N8N API] Request received:', { message, sessionId, model });
 
     // Get webhook URL from environment
     const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         chatInput: message,
+        model: model || 'claude-4-5', // Default to claude-4-5 if not provided
+        sessionId, // Pass sessionId to n8n for chat memory
       }),
     });
 
