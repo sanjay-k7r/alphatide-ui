@@ -6,6 +6,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 interface MarkdownMessageProps {
   content: string;
@@ -37,12 +38,26 @@ function formatContent(content: string): string {
   return formatted;
 }
 
+/**
+ * Checks if the content is still in the status message phase (before main response)
+ * Returns true if streaming and no markdown headers are present yet
+ */
+function isInStatusPhase(content: string, isStreaming?: boolean): boolean {
+  if (!isStreaming) return false;
+
+  // Check if content contains any markdown headers (indicating main response has started)
+  const hasHeaders = /^#{1,6}\s+/m.test(content);
+
+  return !hasHeaders && content.length > 0;
+}
+
 export function MarkdownMessage({
   content,
   isStreaming,
   className,
 }: MarkdownMessageProps) {
   const formattedContent = formatContent(content);
+  const showStatusSpinner = isInStatusPhase(content, isStreaming);
 
   return (
     <div className={cn("text-[13px] leading-[1.5]", className)}>
@@ -192,17 +207,31 @@ export function MarkdownMessage({
       >
         {formattedContent}
       </ReactMarkdown>
+
+      {/* Show spinner during status messages, cursor during main response streaming */}
       {isStreaming && (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{
-            repeat: Infinity,
-            duration: 0.8,
-            ease: "easeInOut",
-          }}
-          className="ml-1 inline-block h-3.5 w-0.5 bg-current align-middle"
-        />
+        <>
+          {showStatusSpinner ? (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="ml-1.5 inline-flex items-center align-middle"
+            >
+              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+            </motion.span>
+          ) : (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.8,
+                ease: "easeInOut",
+              }}
+              className="ml-1 inline-block h-3.5 w-0.5 bg-current align-middle"
+            />
+          )}
+        </>
       )}
     </div>
   );
