@@ -42,7 +42,7 @@ export default function AppLayout({
   }, [pathname, router])
 
   const isRadarActive = segment === "radar"
-  const isAssistantActive = segment === "assistant"
+  const isAssistantActive = segment === "assistant" || segment === null
   const isSettingsActive = segment === "settings"
 
   useEffect(() => {
