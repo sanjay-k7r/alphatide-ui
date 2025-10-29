@@ -24,6 +24,7 @@ import type { ColorScheme } from "@/hooks/useColorScheme";
 import { AssistantHistory } from "@/components/AssistantHistory";
 import { QuestionsPanel } from "@/features/questions/components/QuestionsPanel";
 import { useAuth } from "@/providers/auth-provider";
+import { MarkdownMessage } from "@/components/MarkdownMessage";
 import type {
   UserAssistantSession,
   AssistantChatHistory as ChatMessage,
@@ -389,21 +390,16 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
                           : "bg-muted/50"
                       )}
                     >
-                      <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                        {message.content}
-                        {message.isStreaming && (
-                          <motion.span
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{
-                              repeat: Infinity,
-                              duration: 0.8,
-                              ease: "easeInOut",
-                            }}
-                            className="ml-1 inline-block h-3.5 w-0.5 bg-current"
-                          />
-                        )}
-                      </div>
+                      {message.role === "user" ? (
+                        <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                          {message.content}
+                        </div>
+                      ) : (
+                        <MarkdownMessage
+                          content={message.content}
+                          isStreaming={message.isStreaming}
+                        />
+                      )}
                     </div>
                   </motion.div>
                 ))}
