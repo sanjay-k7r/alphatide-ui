@@ -48,7 +48,8 @@ function isInStatusPhase(content: string, isStreaming?: boolean): boolean {
   // Check if content contains any markdown headers (indicating main response has started)
   const hasHeaders = /^#{1,6}\s+/m.test(content);
 
-  return !hasHeaders && content.length > 0;
+  // Show spinner if no headers AND (content is empty OR has status text)
+  return !hasHeaders;
 }
 
 export function MarkdownMessage({

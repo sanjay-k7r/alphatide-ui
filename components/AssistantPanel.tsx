@@ -386,7 +386,7 @@ export function AssistantPanel({ theme, className }: AssistantPanelProps) {
                   >
                     <div
                       className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-2.5",
+                        "w-full md:max-w-[85%] rounded-2xl px-4 py-2.5",
                         message.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted/50"

@@ -92,18 +92,7 @@ function AppLayoutContent({
             <span className="text-sm font-semibold md:hidden">Alphatide</span>
           )}
         </div>
-        {showDefaultViews && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Browse questions"
-            onClick={openMobilePanel}
-            className="md:hidden"
-          >
-            <MessageCircle className="size-5" />
-          </Button>
-        )}
+        {/* Question bank button removed - available in AssistantPanel */}
       </header>
       <main className="flex-1">
         {showDefaultViews ? (

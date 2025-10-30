@@ -4,7 +4,7 @@ import type {
   StartScreenPrompt,
 } from "@openai/chatkit";
 
-export const APP_VERSION = "0.9.0";
+export const APP_VERSION = "0.9.1";
 
 export const WORKFLOW_ID =
   process.env.NEXT_PUBLIC_CHATKIT_WORKFLOW_ID?.trim() ?? "";
