@@ -5,8 +5,8 @@ import { AppProviders } from "@/providers/app-providers";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Alphatide - AI Financial Trading Assistant",
-  description: "Your edge in options trading with AI-powered insights",
+  title: "Alphatide.ai",
+  description: "Your edge in trading",
 };
 
 export default function RootLayout({
